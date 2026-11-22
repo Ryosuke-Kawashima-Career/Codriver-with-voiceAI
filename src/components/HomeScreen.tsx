@@ -35,6 +35,7 @@ const DEMO_BENGALURU_FIX: GpsFix = {
   lat: 12.9141,
   lon: 77.4856,
   accuracyM: 15,
+  locationName: 'Kengeri, Bengaluru',
   isDemoFallback: true,
 };
 
@@ -76,12 +77,30 @@ export function HomeScreen({
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        onUpdateGpsFix({
+        const baseFix: GpsFix = {
           lat: pos.coords.latitude,
           lon: pos.coords.longitude,
           accuracyM: Math.round(pos.coords.accuracy || 25),
-        });
+        };
+        onUpdateGpsFix(baseFix);
         setGpsState('found');
+
+        // Reverse-geocode live GPS into a readable place name for Home & Voice AI Agent
+        const params = new URLSearchParams({
+          lat: String(baseFix.lat),
+          lon: String(baseFix.lon),
+          lang: selectedLanguage,
+        });
+        fetch(`/api/reverse-geocode?${params.toString()}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data: { name?: string } | null) => {
+            if (data?.name) {
+              onUpdateGpsFix({ ...baseFix, locationName: data.name });
+            }
+          })
+          .catch(() => {
+            // Coordinates remain usable even if reverse geocoding is unavailable
+          });
       },
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
@@ -94,7 +113,7 @@ export function HomeScreen({
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
     );
-  }, [onUpdateGpsFix]);
+  }, [onUpdateGpsFix, selectedLanguage]);
 
   // Spec 4.1: Detect current location by GPS when Home opens
   useEffect(() => {
@@ -197,54 +216,9 @@ export function HomeScreen({
         </div>
       </header>
 
-      {/* Responsive 2-column desktop / single-column mobile workspace */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-10 flex flex-col justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          {/* Left column: Value prop & key interaction principles */}
-          <div className="lg:col-span-5 space-y-6 lg:pt-2">
-            <div className="space-y-3">
-              <h1
-                className="text-3xl sm:text-4xl lg:text-[40px] font-bold tracking-tight text-slate-900 leading-[1.12]"
-                style={{ textWrap: 'balance' }}
-              >
-                Your voice co-driver for the road ahead.
-              </h1>
-              <p className="text-base text-slate-600 leading-relaxed max-w-prose">
-                Live GPS navigation on Google Maps paired with hands-free highway quizzes in Hindi,
-                Tamil, or English. Turn-by-turn directions always come first.
-              </p>
-            </div>
-
-            <div className="pt-4 border-t border-slate-200 space-y-3.5 text-sm text-slate-600">
-              <div className="flex items-start gap-3">
-                <span className="text-emerald-700 font-mono text-xs font-semibold pt-0.5">01</span>
-                <p>
-                  <strong className="text-slate-900 font-semibold">Real routes &amp; GPS</strong> —
-                  search any destination, follow live turn-by-turn guidance, and trigger curated
-                  landmarks within 5 km of your path.
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-amber-700 font-mono text-xs font-semibold pt-0.5">02</span>
-                <p>
-                  <strong className="text-slate-900 font-semibold">Navigation-first audio</strong> —
-                  junction directions interrupt quizzes immediately and hold new questions near
-                  turns.
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-slate-500 font-mono text-xs font-semibold pt-0.5">03</span>
-                <p>
-                  <strong className="text-slate-900 font-semibold">Relaxed voice commands</strong> —
-                  say skip, repeat, pause, resume, or stop anytime. No timers, streaks, or red
-                  penalties.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right column: Language, GPS Location, Destination Search, Start */}
-          <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-8 shadow-xs space-y-6">
+      {/* Focused single-column workspace */}
+      <main className="flex-1 w-full max-w-2xl mx-auto px-5 sm:px-8 py-6 sm:py-10 flex flex-col justify-center">
+        <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-8 shadow-xs space-y-6">
             {/* 1. Language picker */}
             <section aria-labelledby="language-heading" className="space-y-3">
               <div className="flex items-baseline justify-between gap-4">
@@ -332,12 +306,15 @@ export function HomeScreen({
                     )}
                     {gpsState === 'found' && gpsFix && (
                       <>
-                        <p className="text-sm font-medium text-slate-900 tabular-nums">
-                          {gpsFix.isDemoFallback
-                            ? `Bengaluru demo location (±${gpsFix.accuracyM} m)`
-                            : `Current location found (±${gpsFix.accuracyM} m)`}
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                          {gpsFix.locationName
+                            ? gpsFix.locationName
+                            : gpsFix.isDemoFallback
+                              ? `Bengaluru demo location (±${gpsFix.accuracyM} m)`
+                              : `Current location found (±${gpsFix.accuracyM} m)`}
                         </p>
                         <p className="text-xs text-slate-500 font-mono tabular-nums">
+                          {gpsFix.isDemoFallback ? 'Demo start' : `GPS ±${gpsFix.accuracyM} m`} ·{' '}
                           {gpsFix.lat.toFixed(4)}, {gpsFix.lon.toFixed(4)}
                         </p>
                       </>
@@ -591,7 +568,6 @@ export function HomeScreen({
               )}
             </div>
           </div>
-        </div>
       </main>
     </div>
   );

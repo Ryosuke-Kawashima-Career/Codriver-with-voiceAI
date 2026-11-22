@@ -10,12 +10,13 @@ import {
   Send,
   X,
 } from 'lucide-react';
-import type { DebugLogEntry, DemoSpeed } from '../types';
+import type { DebugLogEntry, DemoSpeed, LanguageCode } from '../types';
 import { formatDistance } from '../engine/routeReplay';
 
 interface DemoPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  language: LanguageCode;
   hasRoute: boolean;
   hasLandmarks: boolean;
   hasRegions: boolean;
@@ -24,6 +25,8 @@ interface DemoPanelProps {
   simSpeed: DemoSpeed;
   progressM: number;
   isDirectionsFirst: boolean;
+  activeQuestionSource: 'curated' | 'generated' | null;
+  isGeneratingQuizzes: boolean;
   debugLogs: DebugLogEntry[];
   onToggleSimPlay: () => void;
   onSetSimSpeed: (speed: DemoSpeed) => void;
@@ -40,6 +43,7 @@ const SPEEDS: DemoSpeed[] = [1, 5, 20];
 export function DemoPanel({
   isOpen,
   onClose,
+  language,
   hasRoute,
   hasLandmarks,
   hasRegions,
@@ -48,6 +52,8 @@ export function DemoPanel({
   simSpeed,
   progressM,
   isDirectionsFirst,
+  activeQuestionSource,
+  isGeneratingQuizzes,
   debugLogs,
   onToggleSimPlay,
   onSetSimSpeed,
@@ -61,6 +67,20 @@ export function DemoPanel({
   const [typedText, setTypedText] = useState('');
 
   if (!isOpen) return null;
+
+  const sampleTripQuestion =
+    language === 'hi-IN'
+      ? 'कितना दूर है?'
+      : language === 'ta-IN'
+        ? 'அடுத்த திருப்பம் என்ன?'
+        : 'How far is it?';
+
+  const sampleLocationQuestion =
+    language === 'hi-IN'
+      ? 'मैं अभी कहाँ हूँ?'
+      : language === 'ta-IN'
+        ? 'நான் இப்போது எங்கே இருக்கிறேன்?'
+        : 'Where am I right now?';
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -183,8 +203,9 @@ export function DemoPanel({
             </div>
             {!hasLandmarks && !hasRegions && (
               <p className="text-[11px] text-slate-500">
-                This route passes no curated places from the seed list, so trivia-only rounds will
-                play along the drive.
+                {isGeneratingQuizzes
+                  ? 'Discovering places along your route and generating AI quizzes in the background…'
+                  : 'No places attached yet; trivia rounds will play along the drive.'}
               </p>
             )}
           </section>
@@ -224,6 +245,20 @@ export function DemoPanel({
             </button>
             <button
               type="button"
+              onClick={() => onSubmitTyped(sampleTripQuestion)}
+              className="px-3 min-h-[36px] rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-xs font-medium text-sky-900 transition-colors cursor-pointer"
+            >
+              Ask: &ldquo;{sampleTripQuestion}&rdquo;
+            </button>
+            <button
+              type="button"
+              onClick={() => onSubmitTyped(sampleLocationQuestion)}
+              className="px-3 min-h-[36px] rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-xs font-medium text-sky-900 transition-colors cursor-pointer"
+            >
+              Ask: &ldquo;{sampleLocationQuestion}&rdquo;
+            </button>
+            <button
+              type="button"
               onClick={onRepeat}
               className="px-3 min-h-[36px] rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-800 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
             >
@@ -242,30 +277,51 @@ export function DemoPanel({
         </section>
 
         <section className="space-y-2.5 pt-4 border-t border-slate-200">
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center justify-between gap-2 text-xs">
             <span className="font-semibold text-slate-900">
-              Speech Arbiter &amp; Transcript Debug
+              Voice AI Agent &amp; Speech Arbiter Debug
             </span>
             <span className="font-mono text-slate-500 tabular-nums">{debugLogs.length} events</span>
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
+            <span>
+              Active question:{' '}
+              <strong className="text-slate-800">
+                {activeQuestionSource === 'generated'
+                  ? 'AI generated'
+                  : activeQuestionSource === 'curated'
+                    ? 'Curated'
+                    : 'None'}
+              </strong>
+            </span>
+            <span>{isGeneratingQuizzes ? 'Generating route quizzes…' : 'Quiz pool ready'}</span>
           </div>
 
           <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
             {debugLogs.length === 0 ? (
               <p className="text-xs text-slate-500 py-3">
-                Arbiter decisions (played, held, dropped, interrupted), GPS snaps, and transcript
-                matches appear here.
+                Arbiter decisions, Voice AI Agent intents/replies, GPS snaps, and transcript matches
+                appear here.
               </p>
             ) : (
               debugLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs space-y-1"
+                  className={`rounded-xl border px-3 py-2 text-xs space-y-1 ${
+                    log.kind === 'agent'
+                      ? 'bg-sky-50/70 border-sky-200'
+                      : 'bg-slate-50 border-slate-200'
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-2 font-mono text-[11px] text-slate-500 tabular-nums">
                     <span>
                       {log.timestamp} · {formatDistance(log.distanceM)}
                     </span>
-                    {log.decision && (
+                    {log.intent && (
+                      <span className="font-semibold text-sky-700">{log.intent}</span>
+                    )}
+                    {!log.intent && log.decision && (
                       <span
                         className={`font-semibold ${
                           log.decision === 'played'
@@ -281,7 +337,7 @@ export function DemoPanel({
                   </div>
                   <div className="text-slate-900 leading-snug">{log.summary}</div>
                   {log.detail && (
-                    <div className="text-slate-500 text-[11px] truncate" title={log.detail}>
+                    <div className="text-slate-600 text-[11px] break-words" title={log.detail}>
                       {log.detail}
                     </div>
                   )}

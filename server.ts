@@ -3,6 +3,17 @@ import express from 'express';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  reverseGeocodeLocation,
+  type ExistingPlaceRef,
+  type SupportedLang,
+} from './server/placesAlongRoute.ts';
+import {
+  generateRouteQuizzes,
+  getAgentProvider,
+  handleAgentTurn,
+  type TripSnapshot,
+} from './server/voiceAgent.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -355,13 +366,14 @@ function parseLatLonPair(raw: unknown): { lat: number; lon: number } | null {
 }
 
 const app = express();
-app.use(express.json({ limit: '32kb' }));
+app.use(express.json({ limit: '512kb' }));
 
-// Public non-secret client config (scoped browser Maps JS API key + active TTS provider)
+// Public non-secret client config (scoped browser Maps JS API key + active TTS/Agent providers)
 app.get('/api/config', (_req, res) => {
   res.json({
     googleMapsApiKey: getMapsApiKey(),
     ttsProvider: process.env.MURF_API_KEY ? 'murf-falcon-2' : 'browser-speech',
+    agentProvider: getAgentProvider(),
   });
 });
 
@@ -370,7 +382,45 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     mapsProvider: getMapsApiKey() ? 'google-maps-platform' : 'osm-fallback',
     ttsProvider: process.env.MURF_API_KEY ? 'murf-falcon-2' : 'browser-speech',
+    agentProvider: getAgentProvider(),
   });
+});
+
+// GET /api/reverse-geocode?lat=...&lon=...&lang=...
+// Resolves the user's live GPS coordinates into a human-readable current location name.
+app.get('/api/reverse-geocode', async (req, res) => {
+  try {
+    const lat = Number(req.query.lat);
+    const lon = Number(req.query.lon);
+    if (
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lon) ||
+      lat < -90 ||
+      lat > 90 ||
+      lon < -180 ||
+      lon > 180
+    ) {
+      res.status(400).json({ error: 'Valid lat and lon parameters are required.' });
+      return;
+    }
+
+    const rawLang = typeof req.query.lang === 'string' ? req.query.lang : 'en-IN';
+    const lang: SupportedLang = ALLOWED_LANGUAGES.has(rawLang)
+      ? (rawLang as SupportedLang)
+      : 'en-IN';
+
+    const result = await reverseGeocodeLocation(
+      lat,
+      lon,
+      lang,
+      getMapsApiKey(),
+      GMP_ATTRIBUTION_ID
+    );
+    res.json(result);
+  } catch (err) {
+    console.error('Reverse geocode error:', err instanceof Error ? err.message : 'unknown');
+    res.status(500).json({ error: 'Unable to resolve current location name.' });
+  }
 });
 
 // GET /api/questions?language=en-IN&type=trivia
@@ -417,8 +467,17 @@ app.get('/api/geocode', async (req, res) => {
       return;
     }
 
-    const userLat = typeof req.query.lat === 'string' ? Number(req.query.lat) : NaN;
-    const userLon = typeof req.query.lon === 'string' ? Number(req.query.lon) : NaN;
+    const nearPair = parseLatLonPair(req.query.near);
+    const userLat = nearPair
+      ? nearPair.lat
+      : typeof req.query.lat === 'string'
+        ? Number(req.query.lat)
+        : NaN;
+    const userLon = nearPair
+      ? nearPair.lon
+      : typeof req.query.lon === 'string'
+        ? Number(req.query.lon)
+        : NaN;
     const hasOrigin =
       Number.isFinite(userLat) &&
       Number.isFinite(userLon) &&
@@ -432,11 +491,14 @@ app.get('/api/geocode', async (req, res) => {
 
     const mapsKey = getMapsApiKey();
     if (mapsKey) {
+      const isWithinIndia =
+        !hasOrigin || (userLat >= 6 && userLat <= 37 && userLon >= 68 && userLon <= 98);
+
       const requestBody: Record<string, unknown> = {
         textQuery: query,
         pageSize: 5,
         languageCode: langCode,
-        regionCode: 'IN',
+        ...(isWithinIndia ? { regionCode: 'IN' } : {}),
       };
 
       if (hasOrigin) {
@@ -573,7 +635,26 @@ app.get('/api/route', async (req, res) => {
     const rawDestName =
       typeof req.query.destName === 'string' && req.query.destName.trim()
         ? req.query.destName.trim().slice(0, 80)
-        : 'Destination';
+        : typeof req.query.name === 'string' && req.query.name.trim()
+          ? req.query.name.trim().slice(0, 80)
+          : 'Destination';
+
+    const rawStartName =
+      typeof req.query.startName === 'string' && req.query.startName.trim()
+        ? req.query.startName.trim().slice(0, 80)
+        : '';
+
+    const startRegionLocalized = rawStartName
+      ? {
+          'en-IN': rawStartName,
+          'hi-IN': rawStartName,
+          'ta-IN': rawStartName,
+        }
+      : {
+          'en-IN': 'Current location',
+          'hi-IN': 'वर्तमान स्थान',
+          'ta-IN': 'தற்போதைய இடம்',
+        };
 
     const places = await loadPlaces();
     const mapsKey = getMapsApiKey();
@@ -666,11 +747,7 @@ app.get('/api/route', async (req, res) => {
           },
           length_m: Math.round(totalLengthM),
           duration_s: durationS,
-          start_region: {
-            'en-IN': 'Current location',
-            'hi-IN': 'वर्तमान स्थान',
-            'ta-IN': 'தற்போதைய இடம்',
-          },
+          start_region: startRegionLocalized,
           path: pathCoords,
           maneuvers,
           landmarks,
@@ -755,11 +832,7 @@ app.get('/api/route', async (req, res) => {
       },
       length_m: totalLengthM,
       duration_s: Math.round(osrmRoute.duration),
-      start_region: {
-        'en-IN': 'Current location',
-        'hi-IN': 'वर्तमान स्थान',
-        'ta-IN': 'தற்போதைய இடம்',
-      },
+      start_region: startRegionLocalized,
       path: pathCoords,
       maneuvers,
       landmarks,
@@ -769,6 +842,196 @@ app.get('/api/route', async (req, res) => {
   } catch (err) {
     console.error('Route calculation error:', err instanceof Error ? err.message : 'unknown');
     res.status(500).json({ error: 'Could not calculate route. Please try again.' });
+  }
+});
+
+// POST /api/agent/turn — Live Voice AI Agent for driver trip questions & quiz requests (Spec 4.2)
+app.post('/api/agent/turn', async (req, res) => {
+  try {
+    const body = req.body as {
+      language?: unknown;
+      utterance?: unknown;
+      trip?: unknown;
+    };
+
+    const rawLang = typeof body.language === 'string' ? body.language : 'en-IN';
+    if (!ALLOWED_LANGUAGES.has(rawLang)) {
+      res.status(400).json({ error: 'Unsupported language.' });
+      return;
+    }
+    const language = rawLang as SupportedLang;
+
+    const utterance = typeof body.utterance === 'string' ? body.utterance.trim() : '';
+    if (!utterance || utterance.length > 400) {
+      res.status(400).json({ error: 'Utterance must be between 1 and 400 characters.' });
+      return;
+    }
+
+    if (getAgentProvider() === 'none') {
+      res.status(503).json({ error: 'Voice AI Agent is not configured on the server.' });
+      return;
+    }
+
+    // Sanitize optional trip snapshot (only facts; never raw GPS history or secrets)
+    let trip: TripSnapshot | null = null;
+    if (body.trip && typeof body.trip === 'object') {
+      const t = body.trip as Record<string, unknown>;
+      const locObj =
+        t.current_location && typeof t.current_location === 'object'
+          ? (t.current_location as Record<string, unknown>)
+          : null;
+      const nextM =
+        t.next_maneuver && typeof t.next_maneuver === 'object'
+          ? (t.next_maneuver as Record<string, unknown>)
+          : null;
+      const nextLm =
+        t.next_landmark && typeof t.next_landmark === 'object'
+          ? (t.next_landmark as Record<string, unknown>)
+          : null;
+
+      trip = {
+        destination: typeof t.destination === 'string' ? t.destination.slice(0, 120) : null,
+        current_location:
+          locObj && typeof locObj.name === 'string'
+            ? {
+                name: locObj.name.slice(0, 120),
+                lat: typeof locObj.lat === 'number' && Number.isFinite(locObj.lat) ? locObj.lat : undefined,
+                lon: typeof locObj.lon === 'number' && Number.isFinite(locObj.lon) ? locObj.lon : undefined,
+              }
+            : null,
+        remaining_m:
+          typeof t.remaining_m === 'number' && Number.isFinite(t.remaining_m)
+            ? Math.max(0, Math.round(t.remaining_m))
+            : null,
+        remaining_s:
+          typeof t.remaining_s === 'number' && Number.isFinite(t.remaining_s)
+            ? Math.max(0, Math.round(t.remaining_s))
+            : null,
+        arrival_time: typeof t.arrival_time === 'string' ? t.arrival_time.slice(0, 20) : null,
+        next_maneuver:
+          nextM && typeof nextM.text === 'string' && typeof nextM.distance_m === 'number'
+            ? {
+                text: nextM.text.slice(0, 200),
+                distance_m: Math.max(0, Math.round(nextM.distance_m)),
+              }
+            : null,
+        region: typeof t.region === 'string' ? t.region.slice(0, 120) : null,
+        next_landmark:
+          nextLm && typeof nextLm.name === 'string' && typeof nextLm.distance_m === 'number'
+            ? {
+                name: nextLm.name.slice(0, 120),
+                distance_m: Math.max(0, Math.round(nextLm.distance_m)),
+              }
+            : null,
+      };
+    }
+
+    const result = await Promise.race([
+      handleAgentTurn({ language, utterance, trip }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Agent turn timed out')), 7800)
+      ),
+    ]);
+
+    res.json(result);
+  } catch (err) {
+    console.error('Agent turn error:', err instanceof Error ? err.message : 'unknown');
+    res.status(502).json({ error: 'Voice agent could not answer right now.' });
+  }
+});
+
+// POST /api/agent/quiz — Background place discovery + route quiz generation (Spec 3.2 & 4.3)
+app.post('/api/agent/quiz', async (req, res) => {
+  try {
+    const body = req.body as {
+      language?: unknown;
+      path?: unknown;
+      trivia_count?: unknown;
+    };
+
+    const rawLang = typeof body.language === 'string' ? body.language : 'en-IN';
+    if (!ALLOWED_LANGUAGES.has(rawLang)) {
+      res.status(400).json({ error: 'Unsupported language.' });
+      return;
+    }
+    const language = rawLang as SupportedLang;
+
+    let pathCoords: [number, number][] | null = null;
+    if (Array.isArray(body.path)) {
+      const cleaned: [number, number][] = [];
+      for (const pt of body.path) {
+        if (
+          Array.isArray(pt) &&
+          pt.length >= 2 &&
+          typeof pt[0] === 'number' &&
+          typeof pt[1] === 'number' &&
+          Number.isFinite(pt[0]) &&
+          Number.isFinite(pt[1]) &&
+          pt[0] >= -90 &&
+          pt[0] <= 90 &&
+          pt[1] >= -180 &&
+          pt[1] <= 180
+        ) {
+          cleaned.push([pt[0], pt[1]]);
+        }
+      }
+      if (cleaned.length >= 2) {
+        // Bound max polyline points processed
+        const stride = Math.max(1, Math.floor(cleaned.length / 500));
+        pathCoords = cleaned.filter((_, idx) => idx % stride === 0 || idx === cleaned.length - 1);
+      }
+    }
+
+    const rawTriviaCount =
+      typeof body.trivia_count === 'number' && Number.isFinite(body.trivia_count)
+        ? Math.round(body.trivia_count)
+        : 5;
+
+    // Load curated places & questions so curated items always win over discovered/generated ones
+    const places = await loadPlaces();
+    const existingPlaces: ExistingPlaceRef[] = [
+      ...places.landmarks.map((l) => ({
+        id: l.id,
+        name: l.name['en-IN'],
+        lat: l.lat,
+        lon: l.lon,
+      })),
+      ...places.regions.map((r) => ({
+        id: r.id,
+        name: r.name['en-IN'],
+        lat: r.lat,
+        lon: r.lon,
+      })),
+    ];
+
+    const questionsPath = path.resolve(DATA_DIR, 'questions.json');
+    const curatedRaw = await fs.readFile(questionsPath, 'utf-8');
+    const curatedQuestions = JSON.parse(curatedRaw) as Array<{
+      id?: string;
+      group_id?: string;
+      language?: string;
+    }>;
+    const curatedQuestionIds = new Set<string>();
+    for (const q of curatedQuestions) {
+      if (q.language === language) {
+        if (q.id) curatedQuestionIds.add(q.id);
+        if (q.group_id) curatedQuestionIds.add(q.group_id);
+      }
+    }
+
+    const result = await generateRouteQuizzes({
+      dataDir: DATA_DIR,
+      language,
+      pathCoords,
+      existingPlaces,
+      curatedQuestionIds,
+      triviaCount: rawTriviaCount,
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error('Agent quiz generation error:', err instanceof Error ? err.message : 'unknown');
+    res.status(500).json({ error: 'Unable to generate route quizzes right now.' });
   }
 });
 

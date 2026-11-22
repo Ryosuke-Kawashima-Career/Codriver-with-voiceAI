@@ -185,15 +185,27 @@ export function DriveScreen({
               hasRoute ? 'lg:col-span-6' : ''
             } flex flex-col justify-between gap-3 min-h-0 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs`}
           >
-            {/* 4. Voice Orb + Channel Label */}
+            {/* 4. Voice Orb + Channel Label (tap to speak a trip question or answer anytime) */}
             <div className="shrink-0 flex flex-col items-center">
-              <VoiceOrb
-                channel={state.activeChannel}
-                isSpeaking={state.isHostSpeaking}
-                isListening={state.isListening}
-                phase={state.phase}
-                channelLabel={channelLabel}
-              />
+              <button
+                type="button"
+                onClick={actions.listenNow}
+                disabled={isPaused}
+                aria-label={scripts.ui.askCoDriver}
+                title={scripts.ui.askCoDriver}
+                className="rounded-3xl p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:opacity-60 cursor-pointer"
+              >
+                <VoiceOrb
+                  channel={state.activeChannel}
+                  isSpeaking={state.isHostSpeaking}
+                  isListening={state.isListening}
+                  phase={state.phase}
+                  channelLabel={channelLabel}
+                />
+              </button>
+              {!state.isListening && !state.isHostSpeaking && !isPaused && (
+                <span className="mt-1 text-[11px] text-slate-400">{scripts.ui.askCoDriver}</span>
+              )}
             </div>
 
             {/* 5. Caption Area */}
@@ -245,6 +257,16 @@ export function DriveScreen({
                     <span className="text-xs text-slate-500 capitalize">
                       {state.activeQuestionType}
                     </span>
+                    {state.activeQuestionSource === 'generated' && (
+                      <>
+                        <span className="text-slate-300" aria-hidden="true">
+                          ·
+                        </span>
+                        <span className="text-xs font-medium text-sky-700">
+                          {scripts.ui.generatedBadge}
+                        </span>
+                      </>
+                    )}
                   </>
                 )}
               </div>

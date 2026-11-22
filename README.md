@@ -35,19 +35,23 @@ Safar is a hands-free, voice-first Indian road-trip co-driver and quiz companion
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                     Express Server (server.ts :3000)                     │
 │                                                                          │
-│  GET  /api/config     → Exposes public Maps browser key & TTS mode       │
-│  GET  /api/geocode    → Places API (New) Text Search (Nominatim fallback)│
-│  GET  /api/route      → Routes API computeRoutes (OSRM fallback) +       │
-│                         attaches data/places.json landmarks & regions    │
-│  GET  /api/questions  → Serves curated questions from data/questions.json│
-│  POST /api/tts        → Proxies Murf Falcon 2 TTS (server-side secret)   │
+│  GET  /api/config          → Public Maps browser key & active providers  │
+│  GET  /api/reverse-geocode → Resolves live GPS (lat, lon) to place name  │
+│  GET  /api/geocode         → Places API (New) Search (Nominatim fallback)│
+│  GET  /api/route           → Routes API computeRoutes (OSRM fallback) +  │
+│                              attaches data/places.json stops             │
+│  GET  /api/questions       → Curated questions from data/questions.json  │
+│  POST /api/agent/turn      → Voice AI Agent for live trip questions      │
+│  POST /api/agent/quiz      → Background Overpass/Nominatim discovery +   │
+│                              AI route quiz generation & reuse cache      │
+│  POST /api/tts             → Proxies Murf Falcon 2 TTS (server-side key) │
 └───────┬───────────────────────┬─────────────────────────┬────────────────┘
         │                       │                         │
         ▼                       ▼                         ▼
- Google Maps Platform     Curated JSON Data        Murf Falcon 2 API
- • Maps JS API            • data/places.json       (optional; browser
- • Places API (New)       • data/questions.json     speech fallback)
- • Routes API
+ Google Maps / OSM       Voice AI Agent            Murf Falcon 2 API
+ • Maps JS, Places,      • Gemini (server-side)    (optional; browser
+   Routes API            • data/places.json         speech fallback)
+ • Overpass + Nominatim  • data/generated-questions.json
 ```
 
 ### How Route Enrichment Works
@@ -63,13 +67,17 @@ Safar is a hands-free, voice-first Indian road-trip co-driver and quiz companion
 ```text
 .
 ├── server.ts                      # Express server, API routes, Vite dev middleware
+├── server/
+│   ├── placesAlongRoute.ts        # Overpass + Nominatim route place discovery & reverse geocoding
+│   └── voiceAgent.ts              # Voice AI Agent (/api/agent/turn & /api/agent/quiz + cache)
 ├── index.html                     # HTML entry point & Google Fonts (Latin, Devanagari, Tamil)
 ├── package.json                   # Dependencies and npm scripts
 ├── vite.config.ts                 # Vite + React + Tailwind v4 configuration
 ├── .env.example                   # Environment variable template
 ├── data/
 │   ├── places.json                # Curated landmarks & circular regions with localized greetings
-│   └── questions.json             # Curated landmark, region, and general trivia questions (en/hi/ta)
+│   ├── questions.json             # Curated landmark, region, and general trivia questions (en/hi/ta)
+│   └── generated-questions.json   # Cached AI-generated route questions for reuse & fact-checking
 └── src/
     ├── main.tsx                   # React root mount
     ├── index.css                  # Tailwind CSS v4 entry & Light/Dark base styles

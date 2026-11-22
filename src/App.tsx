@@ -82,6 +82,9 @@ export default function App() {
           to: `${selectedDestination.lat},${selectedDestination.lon}`,
           destName: selectedDestination.name,
         });
+        if (gpsFix.locationName) {
+          params.set('startName', gpsFix.locationName);
+        }
 
         const res = await fetch(`/api/route?${params.toString()}`);
         const payload = (await res.json()) as RouteData & { error?: string };
@@ -98,7 +101,7 @@ export default function App() {
 
       setScreen('drive');
       setIsDemoOpen(false);
-      await actions.startSession(selectedLanguage, computedRoute);
+      await actions.startSession(selectedLanguage, computedRoute, gpsFix);
     } catch {
       setRouteError('Unable to calculate the route right now. Please check your network and try again.');
     } finally {
@@ -165,6 +168,7 @@ export default function App() {
       <DemoPanel
         isOpen={isDemoOpen}
         onClose={() => setIsDemoOpen(false)}
+        language={state.language}
         hasRoute={Boolean(state.route)}
         hasLandmarks={Boolean(state.route && state.route.landmarks.length > 0)}
         hasRegions={Boolean(state.route && state.route.regions.length > 0)}
@@ -173,6 +177,8 @@ export default function App() {
         simSpeed={state.simSpeed}
         progressM={state.progressM}
         isDirectionsFirst={state.isDirectionsFirst}
+        activeQuestionSource={state.activeQuestionSource}
+        isGeneratingQuizzes={state.isGeneratingQuizzes}
         debugLogs={state.debugLogs}
         onToggleSimPlay={actions.toggleSimPlay}
         onSetSimSpeed={actions.setSimSpeed}

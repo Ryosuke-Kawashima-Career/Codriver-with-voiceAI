@@ -48,6 +48,7 @@ export interface HostScripts {
   pausedReply: string;
   resumedReply: string;
   goodbye: (correct: number, asked: number) => string;
+  agentFallback: string;
   ui: {
     directions: string;
     quiz: string;
@@ -55,6 +56,8 @@ export interface HostScripts {
     correctAnswers: string;
     listeningHint: string;
     heardPrefix: string;
+    generatedBadge: string;
+    askCoDriver: string;
     pause: string;
     resume: string;
     skip: string;
@@ -94,13 +97,16 @@ export const HOST_SCRIPTS: Record<LanguageCode, HostScripts> = {
       asked > 0
         ? `Thanks for driving with Safar. You answered ${correct} out of ${asked} questions. Have a safe journey ahead.`
         : `Thanks for driving with Safar. Have a safe journey ahead.`,
+    agentFallback: "Sorry, I didn't catch that.",
     ui: {
       directions: 'Directions',
       quiz: 'Quiz',
       directionsFirst: 'Directions first',
       correctAnswers: 'Correct',
-      listeningHint: 'Listening… say your answer, or "skip", "repeat", "pause", "stop"',
+      listeningHint: 'Listening… answer, ask about your trip, or say "skip", "pause", "stop"',
       heardPrefix: 'Heard',
+      generatedBadge: 'AI quiz',
+      askCoDriver: 'Tap to ask co-driver',
       pause: 'Pause',
       resume: 'Resume',
       skip: 'Skip',
@@ -138,13 +144,16 @@ export const HOST_SCRIPTS: Record<LanguageCode, HostScripts> = {
       asked > 0
         ? `सफ़र के साथ यात्रा करने के लिए धन्यवाद। आपने ${asked} में से ${correct} सही जवाब दिए। आपकी यात्रा मंगलमय हो।`
         : `सफ़र के साथ यात्रा करने के लिए धन्यवाद। आपकी यात्रा मंगलमय हो।`,
+    agentFallback: 'माफ़ कीजिए, मैं ठीक से समझ नहीं पाया।',
     ui: {
       directions: 'दिशा-निर्देश',
       quiz: 'क्विज़',
       directionsFirst: 'दिशा पहले',
       correctAnswers: 'सही जवाब',
-      listeningHint: 'सुन रहा हूँ… बोलें, या कहें "skip", "repeat", "pause", "stop"',
+      listeningHint: 'सुन रहा हूँ… जवाब दें, सफ़र के बारे में पूछें, या "skip", "pause", "stop" कहें',
       heardPrefix: 'सुना गया',
+      generatedBadge: 'AI क्विज़',
+      askCoDriver: 'को-ड्राइवर से पूछने के लिए टैप करें',
       pause: 'रोकें',
       resume: 'जारी रखें',
       skip: 'छोड़ें',
@@ -182,13 +191,16 @@ export const HOST_SCRIPTS: Record<LanguageCode, HostScripts> = {
       asked > 0
         ? `சஃபருடன் பயணித்தமைக்கு நன்றி. ${asked} கேள்விகளில் ${correct} சரியான பதில்கள் அளித்தீர்கள். இனிய பயணம் தொடரட்டும்.`
         : `சஃபருடன் பயணித்தமைக்கு நன்றி. உங்கள் பயணம் இனிதாக அமையட்டும்.`,
+    agentFallback: 'மன்னிக்கவும், எனக்குப் புரியவில்லை.',
     ui: {
       directions: 'வழிகாட்டி',
       quiz: 'வினாடி வினா',
       directionsFirst: 'வழிகாட்டி முதன்மை',
       correctAnswers: 'சரியானவை',
-      listeningHint: 'கேட்கிறது… பதில் சொல்லுங்கள் அல்லது "skip", "repeat", "pause", "stop"',
+      listeningHint: 'கேட்கிறது… பதில் சொல்லுங்கள், பயணத்தைப் பற்றிக் கேளுங்கள் அல்லது "skip", "stop"',
       heardPrefix: 'கேட்டது',
+      generatedBadge: 'AI கேள்வி',
+      askCoDriver: 'துணை ஓட்டுநரிடம் கேட்கத் தட்டவும்',
       pause: 'நிறுத்து',
       resume: 'தொடர்',
       skip: 'தாவு',

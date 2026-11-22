@@ -12,6 +12,7 @@ export interface Question {
   answers: string[];
   display_answer: string;
   fun_fact: string;
+  source?: 'curated' | 'generated';
 }
 
 export type LocalizedText = Record<LanguageCode, string>;
@@ -33,6 +34,7 @@ export interface Landmark {
   lat: number;
   lon: number;
   question_id: string;
+  source?: 'curated' | 'osm';
 }
 
 export interface Region {
@@ -42,6 +44,7 @@ export interface Region {
   welcome: LocalizedText;
   greeting: LocalizedText;
   question_id: string;
+  source?: 'curated' | 'osm';
 }
 
 export interface RouteData {
@@ -71,7 +74,51 @@ export interface GpsFix {
   lat: number;
   lon: number;
   accuracyM: number;
+  locationName?: string;
   isDemoFallback?: boolean;
+}
+
+export interface TripSnapshot {
+  destination: string | null;
+  current_location?: {
+    name: string;
+    lat?: number;
+    lon?: number;
+  } | null;
+  remaining_m: number | null;
+  remaining_s: number | null;
+  arrival_time: string | null;
+  next_maneuver: { text: string; distance_m: number } | null;
+  region: string | null;
+  next_landmark: { name: string; distance_m: number } | null;
+}
+
+export type AgentIntent = 'trip_question' | 'start_quiz' | 'other';
+
+export interface AgentTurnResponse {
+  intent: AgentIntent;
+  reply: string;
+  provider?: 'gemini' | 'anthropic';
+  latencyMs?: number;
+}
+
+export interface AgentQuizStats {
+  placesSource: 'overpass' | 'nominatim' | 'none';
+  discoveredLandmarks: number;
+  discoveredRegions: number;
+  reusedFromCache: number;
+  newlyGenerated: number;
+  triviaGenerated: number;
+  durationMs: number;
+  provider: 'gemini' | 'anthropic' | 'none';
+  errors: string[];
+}
+
+export interface AgentQuizResponse {
+  landmarks: Landmark[];
+  regions: Region[];
+  questions: Question[];
+  stats: AgentQuizStats;
 }
 
 export type AppScreen = 'home' | 'drive' | 'summary';
@@ -95,9 +142,10 @@ export interface DebugLogEntry {
   id: string;
   timestamp: string;
   distanceM: number;
-  kind: 'speech' | 'transcript' | 'event' | 'gps';
+  kind: 'speech' | 'transcript' | 'event' | 'gps' | 'agent';
   decision?: ArbiterDecision;
   channel?: SpeechChannel;
+  intent?: AgentIntent;
   summary: string;
   detail?: string;
 }

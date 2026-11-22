@@ -1,6 +1,6 @@
 {
   "name": "Safar — Voice Quiz Co-Driver",
   "description": "An in-car voice co-driver prototype combining navigation-first turn-by-turn directions with landmark, regional, and Indian trivia voice quizzes in Hindi, Tamil, and English.",
-  "requestFramePermissions": ["microphone"],
+  "requestFramePermissions": ["microphone", "geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

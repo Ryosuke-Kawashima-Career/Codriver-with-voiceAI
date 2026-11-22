@@ -1,0 +1,119 @@
+[
+  {
+    "place_key": "mawal_subdistrict",
+    "place_name": "Mawal Subdistrict",
+    "kind": "landmark",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:14:21.507Z",
+    "question": {
+      "id": "q_osm_lm_mawal_subdistrict",
+      "group_id": "q_osm_lm_mawal_subdistrict",
+      "type": "landmark",
+      "language": "en-IN",
+      "prompt": "We are passing through a historic subdistrict in the Western Ghats; can you name this region known for its hill stations and ancient forts?",
+      "clues": [
+        "This area is home to several important forts that played a crucial role in Maratha history.",
+        "We are near a region famous for being the source of several major rivers and home to popular hill stations."
+      ],
+      "answers": [
+        "Mawal",
+        "Mawal Taluka"
+      ],
+      "display_answer": "Mawal",
+      "fun_fact": "Mawal is culturally significant as it was the region where Shivaji Maharaj first started his movement, recruiting his initial loyal soldiers from here.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "pune",
+    "place_name": "Pune",
+    "kind": "region",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:14:21.507Z",
+    "question": {
+      "id": "q_osm_reg_pune",
+      "group_id": "q_osm_reg_pune",
+      "type": "region",
+      "language": "en-IN",
+      "prompt": "Which major city in Maharashtra is famously known as the Oxford of the East due to its long-standing reputation as an educational hub?",
+      "clues": [],
+      "answers": [
+        "Pune",
+        "Poona"
+      ],
+      "display_answer": "Pune",
+      "fun_fact": "Pune is home to the majestic Shaniwar Wada, which once served as the seat of the Peshwas of the Maratha Empire.",
+      "source": "generated"
+    },
+    "welcome": "Welcome to the cultural capital of Maharashtra, where history and modern energy blend seamlessly.",
+    "greeting": "Namaskar"
+  },
+  {
+    "place_key": "pimpri_chinchwad",
+    "place_name": "Pimpri-Chinchwad",
+    "kind": "region",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:14:21.507Z",
+    "question": {
+      "id": "q_osm_reg_pimpri_chinchwad",
+      "group_id": "q_osm_reg_pimpri_chinchwad",
+      "type": "region",
+      "language": "en-IN",
+      "prompt": "Known as the Detroit of the East, what is the name of this major industrial city adjacent to Pune?",
+      "clues": [],
+      "answers": [
+        "Pimpri-Chinchwad",
+        "Pimpri Chinchwad"
+      ],
+      "display_answer": "Pimpri-Chinchwad",
+      "fun_fact": "Pimpri-Chinchwad has evolved from a small industrial town into one of the largest automobile manufacturing hubs in Asia.",
+      "source": "generated"
+    },
+    "welcome": "Welcome to the vibrant industrial twin city that keeps the wheels of India's economy turning.",
+    "greeting": "Namaskar"
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795338861507_1",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:14:21.507Z",
+    "question": {
+      "id": "q_gen_trivia_1795338861507_1",
+      "group_id": "q_gen_trivia_1795338861507_1",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which legendary Indian batsman holds the world record for the highest number of centuries in international cricket?",
+      "clues": [],
+      "answers": [
+        "Sachin Tendulkar",
+        "Sachin"
+      ],
+      "display_answer": "Sachin Tendulkar",
+      "fun_fact": "Sachin Tendulkar is the only cricketer to have scored one hundred international centuries across Test and ODI formats.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795338861507_2",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:14:21.507Z",
+    "question": {
+      "id": "q_gen_trivia_1795338861507_2",
+      "group_id": "q_gen_trivia_1795338861507_2",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Often called the Indian burger, which popular street food features a spicy fried potato dumpling tucked into a soft bread bun?",
+      "clues": [],
+      "answers": [
+        "Vada Pav",
+        "Vadapav"
+      ],
+      "display_answer": "Vada Pav",
+      "fun_fact": "Vada Pav originated in Mumbai and has become an iconic, affordable comfort food enjoyed by people across all walks of life in India.",
+      "source": "generated"
+    }
+  }
+]
