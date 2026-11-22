@@ -2,6 +2,7 @@ import {
   ArrowUp,
   CornerUpLeft,
   CornerUpRight,
+  Flag,
   GitFork,
   Pause,
   Play,
@@ -14,18 +15,19 @@ import type { CoDriverActions, CoDriverState } from '../engine/useCoDriver';
 import { HOST_SCRIPTS, LANGUAGES } from '../engine/i18n';
 import { formatDistance } from '../engine/routeReplay';
 import type { ManeuverIcon } from '../types';
-import { RouteMapSvg } from './RouteMapSvg';
+import { GoogleRouteMap } from './GoogleRouteMap';
 import { VoiceOrb } from './VoiceOrb';
 
 interface DriveScreenProps {
   state: CoDriverState;
   actions: CoDriverActions;
+  googleMapsApiKey: string;
   isDemoOpen: boolean;
   onToggleDemo: () => void;
 }
 
 function TurnArrowIcon({ icon, active }: { icon: ManeuverIcon; active: boolean }) {
-  const cls = `w-8 h-8 sm:w-9 sm:h-9 shrink-0 ${active ? 'text-emerald-300' : 'text-white'}`;
+  const cls = `w-8 h-8 sm:w-9 sm:h-9 shrink-0 ${active ? 'text-white' : 'text-emerald-700'}`;
   switch (icon) {
     case 'left':
       return <CornerUpLeft className={cls} aria-hidden="true" />;
@@ -35,13 +37,21 @@ function TurnArrowIcon({ icon, active }: { icon: ManeuverIcon; active: boolean }
       return <GitFork className={cls} aria-hidden="true" />;
     case 'roundabout':
       return <RefreshCw className={cls} aria-hidden="true" />;
+    case 'arrive':
+      return <Flag className={cls} aria-hidden="true" />;
     case 'straight':
     default:
       return <ArrowUp className={cls} aria-hidden="true" />;
   }
 }
 
-export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveScreenProps) {
+export function DriveScreen({
+  state,
+  actions,
+  googleMapsApiKey,
+  isDemoOpen,
+  onToggleDemo,
+}: DriveScreenProps) {
   const scripts = HOST_SCRIPTS[state.language];
   const langMeta = LANGUAGES.find((l) => l.code === state.language) ?? LANGUAGES[0];
   const hasRoute = Boolean(state.route);
@@ -58,23 +68,25 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
   return (
     <div
       lang={state.language}
-      className="h-[100dvh] w-full bg-[#0B0E14] text-[#F3F5F8] flex flex-col overflow-hidden"
+      className="h-[100dvh] w-full bg-[#F8FAFC] text-[#0F172A] flex flex-col overflow-hidden"
     >
-      {/* 1. Compact Status Bar: language · current region name */}
-      <header className="shrink-0 h-12 sm:h-14 border-b border-white/[0.08] bg-[#0E121B]">
+      {/* 1. Status Bar: language · current region name */}
+      <header className="shrink-0 h-12 sm:h-14 border-b border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5 min-w-0 text-xs sm:text-sm">
-            <span className="font-semibold text-white whitespace-nowrap shrink-0">Safar</span>
-            <span className="text-slate-600" aria-hidden="true">
+            <span className="font-bold text-slate-900 whitespace-nowrap shrink-0">Safar</span>
+            <span className="text-slate-300" aria-hidden="true">
               ·
             </span>
-            <span className="text-slate-300 whitespace-nowrap shrink-0">
+            <span className="text-slate-600 whitespace-nowrap shrink-0">
               {langMeta.nativeLabel}
             </span>
-            <span className="text-slate-600" aria-hidden="true">
+            <span className="text-slate-300" aria-hidden="true">
               ·
             </span>
-            <span className="text-emerald-300 font-medium truncate">{state.currentRegionName}</span>
+            <span className="text-emerald-700 font-semibold truncate">
+              {state.currentRegionName}
+            </span>
           </div>
 
           <button
@@ -82,8 +94,8 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
             onClick={onToggleDemo}
             className={`min-h-[36px] px-3 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               isDemoOpen
-                ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/40'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
             title="Toggle Demo Panel (Press D)"
           >
@@ -93,19 +105,20 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
         </div>
       </header>
 
-      {/* Main non-scrolling cockpit body */}
+      {/* Main non-scrolling cockpit */}
       <main className="flex-1 min-h-0 w-full max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-5 flex flex-col">
         <div
           className={`flex-1 min-h-0 grid gap-3 sm:gap-5 ${
             hasRoute ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1 max-w-2xl mx-auto w-full'
           }`}
         >
-          {/* Left / Top Navigation Column (hidden when No Route) */}
+          {/* Left / Top Navigation Column (hidden in Quiz-Only mode) */}
           {hasRoute && state.route && (
             <section className="lg:col-span-6 flex flex-col gap-3 min-h-0">
-              {/* 2. Map Panel */}
-              <div className="flex-1 min-h-[155px] sm:min-h-[210px]">
-                <RouteMapSvg
+              {/* 2. Real Google Map Panel */}
+              <div className="flex-1 min-h-[175px] sm:min-h-[220px]">
+                <GoogleRouteMap
+                  apiKey={googleMapsApiKey}
                   route={state.route}
                   language={state.language}
                   progressM={state.progressM}
@@ -116,17 +129,17 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
                 />
               </div>
 
-              {/* 3. Next-Turn Strip (always in the same anchored position) */}
+              {/* 3. Next-Turn Strip (anchored in the same spot) */}
               <div
                 className={`shrink-0 rounded-2xl border px-4 py-3.5 sm:px-5 sm:py-4 flex items-center gap-4 transition-colors duration-200 ${
                   state.isDirectionsFirst
-                    ? 'bg-emerald-500/14 border-emerald-400/50'
-                    : 'bg-[#141923] border-white/[0.08]'
+                    ? 'bg-emerald-600 border-emerald-700 text-white shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-900 shadow-xs'
                 }`}
               >
                 <div
                   className={`w-13 h-13 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shrink-0 ${
-                    state.isDirectionsFirst ? 'bg-emerald-500/25' : 'bg-white/[0.06]'
+                    state.isDirectionsFirst ? 'bg-white/20' : 'bg-emerald-50 border border-emerald-100'
                   }`}
                 >
                   {state.nextManeuver && (
@@ -139,18 +152,26 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2.5">
-                    <span className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-white whitespace-nowrap">
+                    <span
+                      className={`text-xl sm:text-2xl font-bold font-mono tabular-nums whitespace-nowrap ${
+                        state.isDirectionsFirst ? 'text-white' : 'text-slate-900'
+                      }`}
+                    >
                       {state.distanceToNextManeuverM !== null
                         ? formatDistance(state.distanceToNextManeuverM)
                         : '—'}
                     </span>
                     {state.isDirectionsFirst && (
-                      <span className="text-xs font-medium text-emerald-300 whitespace-nowrap">
+                      <span className="text-xs font-semibold text-emerald-100 whitespace-nowrap">
                         {scripts.ui.directionsFirst}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm sm:text-base text-slate-200 font-medium leading-snug truncate mt-0.5">
+                  <p
+                    className={`text-sm sm:text-base font-medium leading-snug truncate mt-0.5 ${
+                      state.isDirectionsFirst ? 'text-emerald-50' : 'text-slate-700'
+                    }`}
+                  >
                     {nextManeuverText}
                   </p>
                 </div>
@@ -162,7 +183,7 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
           <section
             className={`${
               hasRoute ? 'lg:col-span-6' : ''
-            } flex flex-col justify-between gap-3 min-h-0 bg-[#141923] border border-white/[0.08] rounded-2xl p-4 sm:p-6`}
+            } flex flex-col justify-between gap-3 min-h-0 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs`}
           >
             {/* 4. Voice Orb + Channel Label */}
             <div className="shrink-0 flex flex-col items-center">
@@ -175,51 +196,53 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
               />
             </div>
 
-            {/* 5. Caption Area: Host sentence + What the app heard, large legible script */}
+            {/* 5. Caption Area */}
             <div className="flex-1 min-h-0 flex flex-col justify-center gap-3 overflow-hidden px-1">
               <div className="text-center space-y-2">
                 {state.activeClueStep && (
-                  <p className="text-xs font-medium text-amber-300/90 tabular-nums">
+                  <p className="text-xs font-semibold text-amber-700 tabular-nums">
                     Clue {state.activeClueStep.current} / {state.activeClueStep.total}
                   </p>
                 )}
 
                 <p
-                  className={`text-lg sm:text-2xl font-medium leading-snug transition-colors ${
+                  className={`text-lg sm:text-2xl font-semibold leading-snug transition-colors ${
                     state.activeChannel === 'directions'
-                      ? 'text-emerald-100'
+                      ? 'text-emerald-800'
                       : state.lastFeedbackTone === 'positive'
-                        ? 'text-emerald-200'
-                        : 'text-white'
+                        ? 'text-emerald-700'
+                        : 'text-slate-900'
                   }`}
                 >
                   {state.hostCaption || scripts.offer}
                 </p>
               </div>
 
-              {/* Heard transcript line */}
+              {/* What the app heard */}
               <div className="min-h-[36px] flex items-center justify-center text-center">
                 {state.heardCaption ? (
-                  <p className="text-sm sm:text-base text-amber-200/95">
-                    <span className="text-slate-400 mr-2">{scripts.ui.heardPrefix}:</span>
+                  <p className="text-sm sm:text-base text-amber-800 font-medium">
+                    <span className="text-slate-500 font-normal mr-2">
+                      {scripts.ui.heardPrefix}:
+                    </span>
                     <span>&ldquo;{state.heardCaption}&rdquo;</span>
                   </p>
                 ) : state.isListening ? (
-                  <p className="text-xs sm:text-sm text-slate-400">{scripts.ui.listeningHint}</p>
+                  <p className="text-xs sm:text-sm text-slate-500">{scripts.ui.listeningHint}</p>
                 ) : null}
               </div>
             </div>
 
             {/* 6. State Label & Score (no timers, no streaks, no red wrong styling) */}
-            <div className="shrink-0 flex items-center justify-between gap-4 pt-3 border-t border-white/[0.08] text-sm">
-              <div className="flex items-center gap-2 text-slate-300">
-                <span className="font-medium text-white">{stateLabel}</span>
+            <div className="shrink-0 flex items-center justify-between gap-4 pt-3 border-t border-slate-200 text-sm">
+              <div className="flex items-center gap-2 text-slate-600">
+                <span className="font-semibold text-slate-900">{stateLabel}</span>
                 {state.activeQuestionType && state.phase !== 'PAUSED' && state.phase !== 'IDLE' && (
                   <>
-                    <span className="text-slate-600" aria-hidden="true">
+                    <span className="text-slate-300" aria-hidden="true">
                       ·
                     </span>
-                    <span className="text-xs text-slate-400 capitalize">
+                    <span className="text-xs text-slate-500 capitalize">
                       {state.activeQuestionType}
                     </span>
                   </>
@@ -227,8 +250,8 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
               </div>
 
               <div className="flex items-center gap-2 tabular-nums">
-                <span className="text-slate-400">{scripts.ui.correctAnswers}</span>
-                <span className="text-lg font-bold text-emerald-300 font-mono">
+                <span className="text-slate-500">{scripts.ui.correctAnswers}</span>
+                <span className="text-lg font-bold text-emerald-700 font-mono">
                   {state.stats.correctCount}
                 </span>
               </div>
@@ -239,10 +262,10 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
               <button
                 type="button"
                 onClick={actions.togglePause}
-                className={`min-h-[56px] px-3 rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                className={`min-h-[56px] px-3 rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 ${
                   isPaused
-                    ? 'bg-emerald-500 text-[#07120E] hover:bg-emerald-400'
-                    : 'bg-[#1D2433] hover:bg-[#252E42] text-white border border-white/[0.08]'
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                    : 'bg-slate-100 hover:bg-slate-200/80 text-slate-900 border border-slate-200'
                 }`}
               >
                 {isPaused ? (
@@ -262,7 +285,7 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
                 type="button"
                 onClick={actions.skipCurrent}
                 disabled={isPaused}
-                className="min-h-[56px] px-3 rounded-xl bg-[#1D2433] hover:bg-[#252E42] disabled:opacity-45 text-white border border-white/[0.08] font-semibold text-sm sm:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                className="min-h-[56px] px-3 rounded-xl bg-slate-100 hover:bg-slate-200/80 disabled:opacity-45 text-slate-900 border border-slate-200 font-semibold text-sm sm:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
               >
                 <SkipForward className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" aria-hidden="true" />
                 <span>{scripts.ui.skip}</span>
@@ -271,7 +294,7 @@ export function DriveScreen({ state, actions, isDemoOpen, onToggleDemo }: DriveS
               <button
                 type="button"
                 onClick={() => void actions.stopSession()}
-                className="min-h-[56px] px-3 rounded-xl bg-[#242B3B] hover:bg-[#2E374C] text-slate-100 border border-white/[0.1] font-semibold text-sm sm:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                className="min-h-[56px] px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm sm:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
               >
                 <Square className="w-4 h-4 shrink-0" aria-hidden="true" />
                 <span>{scripts.ui.stop}</span>

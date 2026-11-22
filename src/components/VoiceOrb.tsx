@@ -21,44 +21,44 @@ export function VoiceOrb({
   const isPaused = phase === 'PAUSED';
   const isDirections = channel === 'directions';
 
-  // Color system: Highway Emerald for Directions, Warm Amber Gold for Quiz
+  // Light-mode automotive palette: Highway Emerald for Directions, Warm Amber for Quiz
   const ringStroke = isDirections
-    ? 'border-emerald-400/45'
+    ? 'border-emerald-500/45'
     : isListening
-      ? 'border-amber-300/50'
-      : 'border-amber-400/35';
+      ? 'border-amber-500/55'
+      : 'border-amber-500/35';
 
   const coreBg = isPaused
-    ? 'bg-[#1D2432] border-white/15 text-slate-300'
+    ? 'bg-slate-100 border-slate-300 text-slate-500'
     : isDirections
-      ? 'bg-emerald-500/20 border-emerald-400/70 text-emerald-200'
+      ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
       : isListening
-        ? 'bg-amber-400/20 border-amber-300/80 text-amber-100'
-        : 'bg-amber-500/15 border-amber-400/55 text-amber-200';
+        ? 'bg-amber-50 border-amber-500 text-amber-800'
+        : 'bg-amber-50/80 border-amber-400 text-amber-700';
 
   const glowColor = isPaused
-    ? 'rgba(148, 163, 184, 0.04)'
+    ? 'rgba(100, 116, 139, 0.06)'
     : isDirections
-      ? 'rgba(16, 185, 129, 0.24)'
-      : 'rgba(245, 158, 11, 0.22)';
+      ? 'rgba(5, 150, 105, 0.18)'
+      : 'rgba(217, 119, 6, 0.18)';
 
   const animateRing1 =
     prefersReduced || isPaused
-      ? { scale: 1, opacity: 0.2 }
+      ? { scale: 1, opacity: 0.25 }
       : isSpeaking
-        ? { scale: [1, 1.32, 1.08, 1.28, 1], opacity: [0.45, 0.14, 0.35, 0.12, 0.45] }
+        ? { scale: [1, 1.32, 1.08, 1.28, 1], opacity: [0.55, 0.16, 0.42, 0.14, 0.55] }
         : isListening
-          ? { scale: [1, 1.22, 1], opacity: [0.45, 0.12, 0.45] }
-          : { scale: 1, opacity: 0.16 };
+          ? { scale: [1, 1.22, 1], opacity: [0.5, 0.14, 0.5] }
+          : { scale: 1, opacity: 0.2 };
 
   const animateRing2 =
     prefersReduced || isPaused
-      ? { scale: 1, opacity: 0.12 }
+      ? { scale: 1, opacity: 0.14 }
       : isSpeaking
-        ? { scale: [1.05, 1.48, 1.15, 1.42, 1.05], opacity: [0.3, 0.05, 0.24, 0.06, 0.3] }
+        ? { scale: [1.05, 1.48, 1.15, 1.42, 1.05], opacity: [0.35, 0.06, 0.28, 0.08, 0.35] }
         : isListening
-          ? { scale: [1.04, 1.36, 1.04], opacity: [0.28, 0.06, 0.28] }
-          : { scale: 1.04, opacity: 0.08 };
+          ? { scale: [1.04, 1.36, 1.04], opacity: [0.32, 0.08, 0.32] }
+          : { scale: 1.04, opacity: 0.1 };
 
   const transition = isSpeaking
     ? { duration: 1.25, repeat: Infinity, ease: 'easeInOut' as const }
@@ -67,9 +67,8 @@ export function VoiceOrb({
       : { duration: 0.3 };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2.5 py-1">
+    <div className="flex flex-col items-center justify-center gap-2 py-1">
       <div className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28">
-        {/* Soft radial aura */}
         <div
           className="absolute inset-0 rounded-full blur-xl pointer-events-none transition-opacity duration-300"
           style={{
@@ -78,7 +77,6 @@ export function VoiceOrb({
           }}
         />
 
-        {/* Outer acoustic ring */}
         <motion.div
           aria-hidden="true"
           className={`absolute inset-1 rounded-full border ${ringStroke}`}
@@ -86,7 +84,6 @@ export function VoiceOrb({
           transition={transition}
         />
 
-        {/* Inner acoustic ring */}
         <motion.div
           aria-hidden="true"
           className={`absolute inset-3 rounded-full border ${ringStroke}`}
@@ -94,9 +91,8 @@ export function VoiceOrb({
           transition={transition}
         />
 
-        {/* Core orb */}
         <motion.div
-          className={`relative z-10 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 transition-colors duration-200 ${coreBg}`}
+          className={`relative z-10 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 shadow-sm transition-colors duration-200 ${coreBg}`}
           animate={
             prefersReduced || isPaused
               ? { scale: 1 }
@@ -120,9 +116,8 @@ export function VoiceOrb({
         </motion.div>
       </div>
 
-      {/* Explicit Directions vs Quiz label (clean unboxed text) */}
       <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide">
-        <span className={isDirections ? 'text-emerald-300' : 'text-amber-300'}>{channelLabel}</span>
+        <span className={isDirections ? 'text-emerald-700' : 'text-amber-700'}>{channelLabel}</span>
       </div>
     </div>
   );

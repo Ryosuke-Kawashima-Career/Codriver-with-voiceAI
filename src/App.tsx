@@ -4,15 +4,20 @@ import { DriveScreen } from './components/DriveScreen';
 import { HomeScreen } from './components/HomeScreen';
 import { SummaryScreen } from './components/SummaryScreen';
 import { useCoDriver } from './engine/useCoDriver';
-import type { AppScreen, LanguageCode, RouteData, RouteSummary } from './types';
+import type { AppScreen, GeocodeResult, GpsFix, LanguageCode, RouteData } from './types';
 
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('home');
-  const [routes, setRoutes] = useState<RouteSummary[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>('en-IN');
-  const [selectedRouteId, setSelectedRouteId] = useState<string | null>('blr-mysuru');
+  const [gpsFix, setGpsFix] = useState<GpsFix | null>(null);
+  const [selectedDestination, setSelectedDestination] = useState<GeocodeResult | null>(null);
+  const [isQuizOnly, setIsQuizOnly] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
   const [isDemoOpen, setIsDemoOpen] = useState(false);
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>(
+    () => (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim() || ''
+  );
 
   const handleFinishToSummary = useCallback(() => {
     setIsDemoOpen(false);
@@ -21,27 +26,26 @@ export default function App() {
 
   const { state, actions } = useCoDriver(handleFinishToSummary);
 
-  // Load available routes from backend
+  // Load runtime Maps JS key from server config if not injected at Vite build time
   useEffect(() => {
+    if (googleMapsApiKey) return;
     let mounted = true;
-    fetch('/api/routes')
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Failed to load routes'))))
-      .then((data: { routes: RouteSummary[] }) => {
-        if (!mounted) return;
-        setRoutes(data.routes);
-        if (data.routes.length > 0 && selectedRouteId === 'blr-mysuru') {
-          setSelectedRouteId(data.routes[0].route_id);
+    fetch('/api/config')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { googleMapsApiKey?: string } | null) => {
+        if (mounted && data?.googleMapsApiKey) {
+          setGoogleMapsApiKey(data.googleMapsApiKey);
         }
       })
-      .catch((err) => {
-        console.error('Could not fetch routes:', err);
+      .catch(() => {
+        // Offline SVG fallback handles missing key gracefully
       });
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [googleMapsApiKey]);
 
-  // Hidden Demo Panel keyboard toggle: press 'D' on Drive screen (ignoring text inputs)
+  // Hidden Demo Panel keyboard toggle: press 'D' on Drive screen
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (screen !== 'drive') return;
@@ -61,22 +65,46 @@ export default function App() {
   }, [isDemoOpen, screen]);
 
   const startDrive = useCallback(async () => {
+    setRouteError(null);
     setIsStarting(true);
+
     try {
-      let loadedRoute: RouteData | null = null;
-      if (selectedRouteId) {
-        const res = await fetch(`/api/routes/${encodeURIComponent(selectedRouteId)}`);
-        if (res.ok) {
-          loadedRoute = (await res.json()) as RouteData;
+      let computedRoute: RouteData | null = null;
+
+      if (!isQuizOnly) {
+        if (!gpsFix || !selectedDestination) {
+          setRouteError('Please allow GPS location and pick a destination first.');
+          return;
         }
+
+        const params = new URLSearchParams({
+          from: `${gpsFix.lat},${gpsFix.lon}`,
+          to: `${selectedDestination.lat},${selectedDestination.lon}`,
+          destName: selectedDestination.name,
+        });
+
+        const res = await fetch(`/api/route?${params.toString()}`);
+        const payload = (await res.json()) as RouteData & { error?: string };
+
+        if (!res.ok || !payload.path || payload.path.length < 2) {
+          setRouteError(
+            payload.error || 'No driving route could be found between these locations.'
+          );
+          return;
+        }
+
+        computedRoute = payload;
       }
+
       setScreen('drive');
       setIsDemoOpen(false);
-      await actions.startSession(selectedLanguage, loadedRoute);
+      await actions.startSession(selectedLanguage, computedRoute);
+    } catch {
+      setRouteError('Unable to calculate the route right now. Please check your network and try again.');
     } finally {
       setIsStarting(false);
     }
-  }, [actions, selectedLanguage, selectedRouteId]);
+  }, [actions, gpsFix, isQuizOnly, selectedDestination, selectedLanguage]);
 
   const handlePlayAgain = useCallback(() => {
     void startDrive();
@@ -84,19 +112,30 @@ export default function App() {
 
   const handleGoHome = useCallback(() => {
     setIsDemoOpen(false);
+    setRouteError(null);
     setScreen('home');
   }, []);
 
   if (screen === 'home') {
     return (
       <HomeScreen
-        routes={routes}
         selectedLanguage={selectedLanguage}
-        selectedRouteId={selectedRouteId}
-        onSelectLanguage={setSelectedLanguage}
-        onSelectRoute={setSelectedRouteId}
-        onStartDrive={startDrive}
+        gpsFix={gpsFix}
+        selectedDestination={selectedDestination}
+        isQuizOnly={isQuizOnly}
+        routeError={routeError}
         isStarting={isStarting}
+        onSelectLanguage={setSelectedLanguage}
+        onUpdateGpsFix={setGpsFix}
+        onSelectDestination={(dest) => {
+          setRouteError(null);
+          setSelectedDestination(dest);
+        }}
+        onToggleQuizOnly={(val) => {
+          setRouteError(null);
+          setIsQuizOnly(val);
+        }}
+        onStartDrive={startDrive}
       />
     );
   }
@@ -119,6 +158,7 @@ export default function App() {
       <DriveScreen
         state={state}
         actions={actions}
+        googleMapsApiKey={googleMapsApiKey}
         isDemoOpen={isDemoOpen}
         onToggleDemo={() => setIsDemoOpen((prev) => !prev)}
       />
@@ -126,7 +166,10 @@ export default function App() {
         isOpen={isDemoOpen}
         onClose={() => setIsDemoOpen(false)}
         hasRoute={Boolean(state.route)}
+        hasLandmarks={Boolean(state.route && state.route.landmarks.length > 0)}
+        hasRegions={Boolean(state.route && state.route.regions.length > 0)}
         isSimPlaying={state.isSimPlaying}
+        isSimulatedMode={state.isSimulatedMode}
         simSpeed={state.simSpeed}
         progressM={state.progressM}
         isDirectionsFirst={state.isDirectionsFirst}

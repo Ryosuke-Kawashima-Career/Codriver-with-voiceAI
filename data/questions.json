@@ -126,6 +126,48 @@
     "fun_fact": "சன்னபட்னா மரப் பொம்மைகளுக்கு புவிசார் குறியீடு உள்ளது மற்றும் இயற்கை வண்ணங்களால் மட்டுமே இவை செய்யப்படுகின்றன."
   },
   {
+    "id": "q_lm_maddur_en",
+    "group_id": "q_lm_maddur",
+    "type": "landmark",
+    "language": "en-IN",
+    "prompt": "We are near a highway town that gave its name to a crisp, flat savoury fritter sold to travellers for over a century. What snack is it?",
+    "clues": [
+      "It is made with rice flour, semolina, chopped onions, and curry leaves.",
+      "Its name ends with the word Vada."
+    ],
+    "answers": ["maddur vada", "maddur vade", "vada", "vade", "मद्दूर वड़ा", "மத்தூர் வடை"],
+    "display_answer": "Maddur Vada",
+    "fun_fact": "Maddur Vada was first popularised in 1917 at the Maddur railway station canteen for hungry train passengers."
+  },
+  {
+    "id": "q_lm_maddur_hi",
+    "group_id": "q_lm_maddur",
+    "type": "landmark",
+    "language": "hi-IN",
+    "prompt": "हम उस कस्बे के पास हैं जिसका नाम एक करारे, चपटे नमकीन नाश्ते से जुड़ा है जो सौ साल से ज़्यादा समय से यात्रियों को पसंद है। यह कौन-सा नाश्ता है?",
+    "clues": [
+      "यह चावल के आटे, सूजी, प्याज़ और करी पत्ते से बनता है।",
+      "इसके नाम के अंत में वड़ा आता है।"
+    ],
+    "answers": ["maddur vada", "vada", "मद्दूर वड़ा", "वड़ा", "मद्दुर वड़ा"],
+    "display_answer": "मद्दूर वड़ा",
+    "fun_fact": "मद्दूर वड़ा सबसे पहले 1917 में मद्दूर रेलवे स्टेशन की कैंटीन में यात्रियों के लिए मशहूर हुआ था।"
+  },
+  {
+    "id": "q_lm_maddur_ta",
+    "group_id": "q_lm_maddur",
+    "type": "landmark",
+    "language": "ta-IN",
+    "prompt": "ஒரு நூற்றாண்டுக்கும் மேலாகப் பயணிகளைக் கவரும் மொறுமொறுப்பான தட்டைப் பலகாரத்திற்குப் பெயர் பெற்ற ஊரின் அருகே உள்ளோம். அது எந்தப் பலகாரம்?",
+    "clues": [
+      "அரிசி மாவு, ரவை, வெங்காயம் மற்றும் கறிவேப்பிலை கொண்டு செய்யப்படுகிறது.",
+      "இதன் பெயர் வடை என்று முடியும்."
+    ],
+    "answers": ["maddur vada", "vada", "மத்தூர் வடை", "வடை"],
+    "display_answer": "மத்தூர் வடை (Maddur Vada)",
+    "fun_fact": "மத்தூர் வடை 1917-ஆம் ஆண்டு மத்தூர் ரயில் நிலைய உணவகத்தில் பயணிகளுக்காக அறிமுகமாகிப் புகழ் பெற்றது."
+  },
+  {
     "id": "q_lm_srirangapatna_en",
     "group_id": "q_lm_srirangapatna",
     "type": "landmark",
@@ -210,6 +252,91 @@
     "fun_fact": "மைசூரு தசரா திருவிழா 1610-ஆம் ஆண்டு முதல் நானூறு ஆண்டுகளுக்கும் மேலாக கொண்டாடப்படுகிறது."
   },
   {
+    "id": "q_lm_marina_chennai_en",
+    "group_id": "q_lm_marina_chennai",
+    "type": "landmark",
+    "language": "en-IN",
+    "prompt": "We are near India's longest natural urban beach, stretching along Chennai's coast. What is it called?",
+    "clues": [
+      "It faces the Bay of Bengal and is lined with historic statues.",
+      "Its name starts with the letter M."
+    ],
+    "answers": ["marina", "marina beach", "मरीना", "மெரினா"],
+    "display_answer": "Marina Beach",
+    "fun_fact": "Marina Beach stretches for roughly thirteen kilometres from Fort St. George to Foreshore Estate."
+  },
+  {
+    "id": "q_lm_marina_chennai_hi",
+    "group_id": "q_lm_marina_chennai",
+    "type": "landmark",
+    "language": "hi-IN",
+    "prompt": "हम भारत के सबसे लंबे प्राकृतिक शहरी समुद्र तट के पास हैं, जो चेन्नई के किनारे फैला है। इसका नाम क्या है?",
+    "clues": [
+      "यह बंगाल की खाड़ी के किनारे स्थित है।",
+      "इसका नाम मरीना से शुरू होता है।"
+    ],
+    "answers": ["marina", "marina beach", "मरीना", "मरीना बीच"],
+    "display_answer": "मरीना बीच",
+    "fun_fact": "चेन्नई का मरीना बीच लगभग तेरह किलोमीटर लंबा है और भारत का सबसे लंबा शहरी समुद्र तट है।"
+  },
+  {
+    "id": "q_lm_marina_chennai_ta",
+    "group_id": "q_lm_marina_chennai",
+    "type": "landmark",
+    "language": "ta-IN",
+    "prompt": "சென்னைக் கடற்கரையோரம் அமைந்துள்ள இந்தியாவின் மிக நீளமான நகர்ப்புறக் கடற்கரையின் அருகே உள்ளோம். அதன் பெயர் என்ன?",
+    "clues": [
+      "இது வங்காள விரிகுடாவை நோக்கி அமைந்துள்ளது.",
+      "இதன் பெயர் மெரினா என்று தொடங்கும்."
+    ],
+    "answers": ["marina", "marina beach", "மெரினா", "மெரினா கடற்கரை"],
+    "display_answer": "மெரினா கடற்கரை",
+    "fun_fact": "மெரினா கடற்கரை சுமார் பதிமூன்று கிலோமீட்டர் நீளத்திற்குப் பரந்து விரிந்துள்ளது."
+  },
+  {
+    "id": "q_lm_charminar_hyderabad_en",
+    "group_id": "q_lm_charminar_hyderabad",
+    "type": "landmark",
+    "language": "en-IN",
+    "prompt": "We are near a 1591 Hyderabad monument whose name literally means four minarets. Which landmark is it?",
+    "clues": [
+      "It was built by Muhammad Quli Qutb Shah.",
+      "It stands beside the famous Laad Bazaar."
+    ],
+    "answers": ["charminar", "char minar", "चारमीनार", "சார்மினார்"],
+    "display_answer": "Charminar",
+    "fun_fact": "Charminar's four grand arches face the four cardinal directions in the heart of Old Hyderabad."
+  },
+  {
+    "id": "q_lm_charminar_hyderabad_hi",
+    "group_id": "q_lm_charminar_hyderabad",
+    "type": "landmark",
+    "language": "hi-IN",
+    "prompt": "हम 1591 में बनी हैदराबाद की उस प्रसिद्ध इमारत के पास हैं जिसके नाम का अर्थ चार मीनारें होता है। वह कौन-सी इमारत है?",
+    "clues": [
+      "इसे मुहम्मद कुली कुतुब शाह ने बनवाया था।",
+      "इसके पास मशहूर लाड़ बाज़ार है।"
+    ],
+    "answers": ["charminar", "char minar", "चारमीनार", "चार मीनार"],
+    "display_answer": "चारमीनार",
+    "fun_fact": "चारमीनार के चारों भव्य मेहराब पुराने हैदराबाद की चारों मुख्य दिशाओं की ओर खुलते हैं।"
+  },
+  {
+    "id": "q_lm_charminar_hyderabad_ta",
+    "group_id": "q_lm_charminar_hyderabad",
+    "type": "landmark",
+    "language": "ta-IN",
+    "prompt": "1591-ஆம் ஆண்டு கட்டப்பட்ட நான்கு கோபுரங்களைக் கொண்ட ஹைதராபாத்தின் புகழ்பெற்ற நினைவுச்சின்னத்தின் அருகே உள்ளோம். அது எது?",
+    "clues": [
+      "இதை முகமது குலி குதுப் ஷா கட்டினார்.",
+      "புகழ்பெற்ற லாட் பஜார் இதன் அருகில் உள்ளது."
+    ],
+    "answers": ["charminar", "char minar", "சார்மினார்"],
+    "display_answer": "சார்மினார் (Charminar)",
+    "fun_fact": "சார்மினாரின் நான்கு பெரிய வளைவுகளும் பழைய ஹைதராபாத்தின் நான்கு திசைகளை நோக்கி அமைந்துள்ளன."
+  },
+
+  {
     "id": "q_reg_mandya_en",
     "group_id": "q_reg_mandya",
     "type": "region",
@@ -274,6 +401,72 @@
     "answers": ["mysore pak", "mysuru pak", "மைசூர் பாக்", "மைசூர்பாக்"],
     "display_answer": "மைசூர் பாக்",
     "fun_fact": "அரண்மனை சமையல்காரர் காகாசுர மடப்பா 1930-களில் மன்னருக்காக மைசூர் பாக்கை உருவாக்கினார்."
+  },
+  {
+    "id": "q_reg_chennai_en",
+    "group_id": "q_reg_chennai",
+    "type": "region",
+    "language": "en-IN",
+    "prompt": "Which soft, steamed rice cake served with sambar and coconut chutney is Tamil Nadu's most famous breakfast?",
+    "clues": [],
+    "answers": ["idli", "idly", "इडली", "இட்லி"],
+    "display_answer": "Idli",
+    "fun_fact": "Chennai's classic morning pairing is piping hot Mallipoo Idli followed by frothy filter coffee."
+  },
+  {
+    "id": "q_reg_chennai_hi",
+    "group_id": "q_reg_chennai",
+    "type": "region",
+    "language": "hi-IN",
+    "prompt": "सांभर और नारियल की चटनी के साथ परोसा जाने वाला कौन-सा नरम, भाप में पका नाश्ता तमिलनाडु की पहचान है?",
+    "clues": [],
+    "answers": ["idli", "idly", "इडली"],
+    "display_answer": "इडली",
+    "fun_fact": "चेन्नई में सुबह की शुरुआत मुलायम इडली और गरमागरम फ़िल्टर कॉफ़ी के साथ की जाती है।"
+  },
+  {
+    "id": "q_reg_chennai_ta",
+    "group_id": "q_reg_chennai",
+    "type": "region",
+    "language": "ta-IN",
+    "prompt": "சாம்பார் மற்றும் தேங்காய் சட்னியுடன் பரிமாறப்படும் மென்மையான ஆவியில் வெந்த காலை உணவு எது?",
+    "clues": [],
+    "answers": ["idli", "idly", "இட்லி"],
+    "display_answer": "இட்லி",
+    "fun_fact": "சென்னையில் மல்லிப்பூ இட்லியும் சூடான ஃபில்டர் காபியும் மிகவும் பிரபலமான காலை உணவாகும்."
+  },
+  {
+    "id": "q_reg_hyderabad_en",
+    "group_id": "q_reg_hyderabad",
+    "type": "region",
+    "language": "en-IN",
+    "prompt": "Which fragrant, slow-cooked spiced rice dish is Hyderabad celebrated for all across India?",
+    "clues": [],
+    "answers": ["biryani", "hyderabadi biryani", "dum biryani", "बिरयानी", "பிரியாணி"],
+    "display_answer": "Biryani",
+    "fun_fact": "Hyderabadi Dum Biryani is traditionally sealed in a heavy pot so the basmati rice steams in its own aromatic spices."
+  },
+  {
+    "id": "q_reg_hyderabad_hi",
+    "group_id": "q_reg_hyderabad",
+    "type": "region",
+    "language": "hi-IN",
+    "prompt": "धीमी आँच पर मसालों और बासमती चावल से बनने वाला कौन-सा खुशबूदार व्यंजन हैदराबाद की पहचान है?",
+    "clues": [],
+    "answers": ["biryani", "hyderabadi biryani", "बिरयानी", "हैदराबादी बिरयानी"],
+    "display_answer": "बिरयानी",
+    "fun_fact": "हैदराबादी दम बिरयानी को बंद हांडी में धीमी आँच पर पकाया जाता है ताकि मसालों की खुशबू चावल में समा जाए।"
+  },
+  {
+    "id": "q_reg_hyderabad_ta",
+    "group_id": "q_reg_hyderabad",
+    "type": "region",
+    "language": "ta-IN",
+    "prompt": "பாஸ்மதி அரிசி மற்றும் மசாலாக்களுடன் தம் போட்டு சமைக்கப்படும் ஹைதராபாத்தின் உலகப் புகழ்பெற்ற உணவு எது?",
+    "clues": [],
+    "answers": ["biryani", "hyderabadi biryani", "பிரியாணி", "ஹைதராபாத் பிரியாணி"],
+    "display_answer": "பிரியாணி",
+    "fun_fact": "ஹைதராபாத் தம் பிரியாணி மூடிய பாத்திரத்தில் மெதுவான தீயில் வேகவைக்கப்பட்டு தனித்துவமான மணம் பெறுகிறது."
   },
 
   {

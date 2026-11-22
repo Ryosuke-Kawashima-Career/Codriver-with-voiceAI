@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
-  ArbiterDecision,
   DebugLogEntry,
   DemoSpeed,
   Landmark,
@@ -24,6 +23,7 @@ import { HOST_SCRIPTS } from './i18n';
 import {
   BASE_SPEED_MPS,
   collectRouteEvents,
+  computeCumulativeRouteDistances,
   createFiredTriggers,
   DEFAULT_NAV_SETTINGS,
   getCurrentRegion,
@@ -31,6 +31,7 @@ import {
   getNextManeuver,
   getNextRegion,
   isInDirectionsFirstZone,
+  snapGpsFixToRoute,
   syncTriggersForJump,
   type FiredRouteTriggers,
 } from './routeReplay';
@@ -38,7 +39,7 @@ import { VoiceClient } from './voiceClient';
 
 interface ActiveQuizContext {
   question: Question;
-  clueIndex: number; // 0 = initial prompt, 1..N = extra clues
+  clueIndex: number;
   landmark?: Landmark;
   region?: Region;
   alreadyRepeatedAfterInterrupt?: boolean;
@@ -52,8 +53,7 @@ interface PendingRouteTrigger {
 }
 
 function nowStamp(): string {
-  const d = new Date();
-  return d.toTimeString().slice(0, 8);
+  return new Date().toTimeString().slice(0, 8);
 }
 
 export interface CoDriverState {
@@ -61,6 +61,7 @@ export interface CoDriverState {
   route: RouteData | null;
   progressM: number;
   isSimPlaying: boolean;
+  isSimulatedMode: boolean;
   simSpeed: DemoSpeed;
   phase: QuizPhase;
   activeChannel: SpeechChannel;
@@ -103,6 +104,7 @@ export function useCoDriver(onFinishToSummary: () => void): {
   const [route, setRoute] = useState<RouteData | null>(null);
   const [progressM, setProgressM] = useState(0);
   const [isSimPlaying, setIsSimPlaying] = useState(false);
+  const [isSimulatedMode, setIsSimulatedMode] = useState(false);
   const [simSpeed, setSimSpeedState] = useState<DemoSpeed>(1);
 
   const [phase, setPhase] = useState<QuizPhase>('IDLE');
@@ -126,7 +128,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
   });
   const [debugLogs, setDebugLogs] = useState<DebugLogEntry[]>([]);
 
-  // Refs for synchronous access inside async voice & simulation loops
   const voiceRef = useRef<VoiceClient | null>(null);
   if (!voiceRef.current) {
     voiceRef.current = new VoiceClient();
@@ -136,9 +137,11 @@ export function useCoDriver(onFinishToSummary: () => void): {
   const quizTokenRef = useRef(0);
   const languageRef = useRef<LanguageCode>('en-IN');
   const routeRef = useRef<RouteData | null>(null);
+  const cumDistancesRef = useRef<number[]>([]);
   const progressMRef = useRef(0);
   const simSpeedRef = useRef<DemoSpeed>(1);
   const isSimPlayingRef = useRef(false);
+  const gpsIgnoredByDemoRef = useRef(false);
   const isPausedRef = useRef(false);
   const isNavSpeakingRef = useRef(false);
   const phaseRef = useRef<QuizPhase>('IDLE');
@@ -160,7 +163,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
     regionsPassed: [],
   });
 
-  // Keep refs synced
   const setPhaseSafe = useCallback((next: QuizPhase) => {
     phaseRef.current = next;
     setPhase(next);
@@ -246,7 +248,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
     []
   );
 
-  // Forward declarations via refs so mutually recursive quiz/nav flows stay clean
   const scheduleNextOfferRef = useRef<(delayMs?: number) => void>(() => {});
   const runOfferRoundRef = useRef<() => Promise<void>>(async () => {});
   const runQuestionRoundRef = useRef<(ctx: ActiveQuizContext, customLead?: string) => Promise<void>>(
@@ -256,10 +257,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
   const handleUserInputRef = useRef<(rawText: string | null) => Promise<void>>(async () => {});
   const stopSessionRef = useRef<() => Promise<void>>(async () => {});
 
-  /**
-   * Speech Arbiter — Quiz Channel (Section 5.2)
-   * Blocks any quiz speech during directions-first zone or active navigation audio.
-   */
   const speakQuiz = useCallback(
     async (text: string, token: number): Promise<boolean> => {
       const activeZone = isInDirectionsFirstZone(
@@ -303,15 +300,10 @@ export function useCoDriver(onFinishToSummary: () => void): {
     [pushLog]
   );
 
-  /**
-   * Speech Arbiter — Directions Channel (Section 5.2 Priority 1)
-   * Immediately interrupts any running quiz speech or mic session.
-   */
   const enqueueDirectionsSpeech = useCallback(
     async (text: string) => {
       const sessionToken = sessionTokenRef.current;
 
-      // Interrupt any active quiz immediately!
       if (
         phaseRef.current === 'ASK' ||
         phaseRef.current === 'LISTEN' ||
@@ -389,7 +381,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
       setIsHostSpeaking(false);
       setActiveChannel('quiz');
 
-      // If we are already outside the directions-first zone, resume any interrupted question or queued trigger
       if (!isInDirectionsFirstZone(routeRef.current, progressMRef.current, DEFAULT_NAV_SETTINGS)) {
         processDeferredAfterZoneRef.current();
       }
@@ -397,36 +388,31 @@ export function useCoDriver(onFinishToSummary: () => void): {
     [pushLog, setPhaseSafe]
   );
 
-  const openMicForCurrentPhase = useCallback(
-    (token: number) => {
-      if (token !== quizTokenRef.current || isPausedRef.current || isNavSpeakingRef.current) {
-        return;
-      }
-      setIsListening(true);
-      setHeardCaption('');
-      voiceRef.current?.startListening({
-        language: languageRef.current,
-        silenceMs: 8000,
-        onInterim: (interim) => {
-          if (token === quizTokenRef.current) {
-            setHeardCaption(interim);
-          }
-        },
-        onFinal: (finalTranscript) => {
-          if (token !== quizTokenRef.current) return;
-          setIsListening(false);
-          handleUserInputRef.current(finalTranscript);
-        },
-      });
-    },
-    []
-  );
+  const openMicForCurrentPhase = useCallback((token: number) => {
+    if (token !== quizTokenRef.current || isPausedRef.current || isNavSpeakingRef.current) {
+      return;
+    }
+    setIsListening(true);
+    setHeardCaption('');
+    voiceRef.current?.startListening({
+      language: languageRef.current,
+      silenceMs: 8000,
+      onInterim: (interim) => {
+        if (token === quizTokenRef.current) {
+          setHeardCaption(interim);
+        }
+      },
+      onFinal: (finalTranscript) => {
+        if (token !== quizTokenRef.current) return;
+        setIsListening(false);
+        handleUserInputRef.current(finalTranscript);
+      },
+    });
+  }, []);
 
   const runQuestionRound = useCallback(
     async (ctx: ActiveQuizContext, customLead?: string) => {
       clearOfferTimer();
-      const lang = languageRef.current;
-      const scripts = HOST_SCRIPTS[lang];
 
       const activeZone = isInDirectionsFirstZone(
         routeRef.current,
@@ -456,8 +442,11 @@ export function useCoDriver(onFinishToSummary: () => void): {
         setActiveClueStep(null);
       }
 
-      // Count question asked only on initial ask (clueIndex === 0 and not a repeat)
-      if (ctx.clueIndex === 0 && !ctx.alreadyRepeatedAfterInterrupt && !customLead?.includes('Back')) {
+      if (
+        ctx.clueIndex === 0 &&
+        !ctx.alreadyRepeatedAfterInterrupt &&
+        !customLead?.includes('Back')
+      ) {
         setStats((prev) => {
           const updated = { ...prev, questionsAsked: prev.questionsAsked + 1 };
           statsRef.current = updated;
@@ -564,7 +553,10 @@ export function useCoDriver(onFinishToSummary: () => void): {
       const question = findQuestionByKey(region.question_id);
       if (!question) return;
 
-      const welcomePrefix = `${region.welcome[lang] || region.welcome['en-IN']} ${region.greeting}`;
+      const welcome = region.welcome[lang] || region.welcome['en-IN'];
+      const greeting = region.greeting[lang] || region.greeting['en-IN'];
+      const welcomePrefix = `${welcome} ${greeting}`;
+
       recordRegionStop(region, true, false);
       await runQuestionRoundRef.current(
         {
@@ -586,7 +578,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
 
     const scripts = HOST_SCRIPTS[languageRef.current];
 
-    // 1. Repeat an interrupted unanswered question once, briefly
     if (interruptedQuizRef.current) {
       const saved = interruptedQuizRef.current;
       interruptedQuizRef.current = null;
@@ -606,7 +597,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
       return;
     }
 
-    // 2. Process queued region welcomes or post-zone landmark fun facts
     if (pendingTriggersRef.current.length > 0) {
       const nextPending = pendingTriggersRef.current.shift()!;
       if (nextPending.kind === 'region' && nextPending.region) {
@@ -632,7 +622,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
       }
     }
 
-    // 3. Otherwise schedule a normal trivia offer if idle
     if (phaseRef.current === 'IDLE') {
       scheduleNextOfferRef.current(4500);
     }
@@ -727,7 +716,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
         setHeardCaption(rawText);
       }
 
-      // Check global voice commands first
       if (rawText) {
         const cmd = detectVoiceCommand(rawText);
         if (cmd) {
@@ -741,7 +729,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
         }
       }
 
-      // OFFER phase handling
       if (currentPhase === 'OFFER') {
         const intent = rawText ? detectOfferIntent(rawText) : null;
         pushLog({
@@ -758,7 +745,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
             setPhaseSafe('IDLE');
           }
         } else {
-          // Skip or 8s silence -> go quiet peacefully, try again later
           const token = ++quizTokenRef.current;
           setPhaseSafe('IDLE');
           setActiveQuestionType(null);
@@ -772,7 +758,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
         return;
       }
 
-      // LISTEN phase handling (answering an active question)
       if (currentPhase === 'LISTEN' && activeQuizRef.current) {
         const ctx = activeQuizRef.current;
         const token = ++quizTokenRef.current;
@@ -790,7 +775,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
           detail: rawText ?? undefined,
         });
 
-        // Correct answer!
         if (match?.matched) {
           setLastFeedbackTone('positive');
           setStats((prev) => {
@@ -819,7 +803,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
           return;
         }
 
-        // Missed or silent — if landmark has more clues, step to next clue (hardest -> easiest)!
         if (
           ctx.question.type === 'landmark' &&
           ctx.question.clues &&
@@ -837,7 +820,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
           return;
         }
 
-        // Final miss or silence -> warm reply with answer + fun fact (no penalties, no retry)
         activeQuizRef.current = null;
         setActiveClueStep(null);
         setPhaseSafe('FEEDBACK');
@@ -880,7 +862,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
         DEFAULT_NAV_SETTINGS
       );
 
-      // Section 5.2 rule 3: landmark falling in directions-first zone is dropped -> one-line fun fact after zone
       if (activeZone || isNavSpeakingRef.current) {
         recordLandmarkStop(landmark, false, false);
         pendingTriggersRef.current.push({
@@ -897,7 +878,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
         return;
       }
 
-      // Only one question active at a time (Section 5.2 rule 4)
       if (activeQuizRef.current) {
         recordLandmarkStop(landmark, false, false);
         pushLog({
@@ -932,7 +912,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
         DEFAULT_NAV_SETTINGS
       );
 
-      // Section 5.2 rule 3: region welcome waits until directions-first zone ends
       if (activeZone || isNavSpeakingRef.current || activeQuizRef.current) {
         pendingTriggersRef.current.push({
           kind: 'region',
@@ -956,39 +935,28 @@ export function useCoDriver(onFinishToSummary: () => void): {
     [pushLog, runRegionWelcome]
   );
 
-  // Route Replay Simulation Loop (runs smoothly at 10Hz when playing)
-  useEffect(() => {
-    if (!isSimPlaying || !route) return;
-    let lastTs = performance.now();
-
-    const intervalId = window.setInterval(() => {
-      const now = performance.now();
-      const dtSec = Math.min(0.25, (now - lastTs) / 1000);
-      lastTs = now;
-
+  // Unified progress processor shared by both real GPS watchPosition and Demo Panel replay
+  const advancePositionTo = useCallback(
+    (nextProgress: number) => {
       const currentRoute = routeRef.current;
-      if (!currentRoute || !isSimPlayingRef.current) return;
+      if (!currentRoute) return;
 
-      const deltaM = BASE_SPEED_MPS * simSpeedRef.current * dtSec;
-      const nextProgress = Math.min(currentRoute.length_m, progressMRef.current + deltaM);
-      progressMRef.current = nextProgress;
-      setProgressM(nextProgress);
+      const clamped = Math.max(0, Math.min(currentRoute.length_m, nextProgress));
+      progressMRef.current = clamped;
+      setProgressM(clamped);
 
       const inZoneNow = Boolean(
-        isInDirectionsFirstZone(currentRoute, nextProgress, DEFAULT_NAV_SETTINGS)
+        isInDirectionsFirstZone(currentRoute, clamped, DEFAULT_NAV_SETTINGS)
       );
       if (wasInDirectionsZoneRef.current && !inZoneNow) {
-        pushLog({
-          kind: 'event',
-          summary: 'Exited directions-first zone',
-        });
+        pushLog({ kind: 'event', summary: 'Exited directions-first zone' });
         processDeferredAfterZoneRef.current();
       }
       wasInDirectionsZoneRef.current = inZoneNow;
 
       const events = collectRouteEvents(
         currentRoute,
-        nextProgress,
+        clamped,
         firedTriggersRef.current,
         DEFAULT_NAV_SETTINGS
       );
@@ -996,18 +964,33 @@ export function useCoDriver(onFinishToSummary: () => void): {
       const lang = languageRef.current;
       const scripts = HOST_SCRIPTS[lang];
 
+      // Spec 5.1: Pre-cache maneuver audio ~3 km before the maneuver
+      for (const m of events.maneuversToPrefetch) {
+        const baseText = m.text[lang] || m.text['en-IN'];
+        const earlyText = m.text_early?.[lang] || scripts.nav800(baseText);
+        void voiceRef.current?.prefetch(earlyText, lang, 'directions');
+        void voiceRef.current?.prefetch(scripts.nav100(baseText), lang, 'directions');
+      }
+
       for (const m of events.maneuvers800) {
-        void enqueueDirectionsSpeech(scripts.nav800(m.text[lang] || m.text['en-IN']));
+        const baseText = m.text[lang] || m.text['en-IN'];
+        const line = m.text_early?.[lang] || scripts.nav800(baseText);
+        void enqueueDirectionsSpeech(line);
       }
+
       for (const m of events.maneuvers100) {
-        void enqueueDirectionsSpeech(scripts.nav100(m.text[lang] || m.text['en-IN']));
+        const baseText = m.text[lang] || m.text['en-IN'];
+        void enqueueDirectionsSpeech(scripts.nav100(baseText));
       }
+
       for (const r of events.regionsEntered) {
         triggerRegionWelcome(r);
       }
+
       for (const lm of events.landmarksDue) {
         triggerLandmarkQuiz(lm);
       }
+
       for (const lm of events.landmarksPassed) {
         recordLandmarkStop(lm, false, false);
       }
@@ -1017,18 +1000,73 @@ export function useCoDriver(onFinishToSummary: () => void): {
         setIsSimPlaying(false);
         void stopSessionRef.current();
       }
+    },
+    [
+      enqueueDirectionsSpeech,
+      pushLog,
+      recordLandmarkStop,
+      triggerLandmarkQuiz,
+      triggerRegionWelcome,
+    ]
+  );
+
+  // Real GPS watchPosition while driving (automatically ignored once Demo Panel replay/jump is used)
+  useEffect(() => {
+    if (!route || isSimulatedMode) return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        if (gpsIgnoredByDemoRef.current || !routeRef.current) return;
+        const snapped = snapGpsFixToRoute(
+          routeRef.current,
+          cumDistancesRef.current,
+          progressMRef.current,
+          pos.coords.latitude,
+          pos.coords.longitude,
+          DEFAULT_NAV_SETTINGS
+        );
+
+        if (!snapped) {
+          pushLog({
+            kind: 'gps',
+            summary: 'GPS fix ignored (> 100 m off route)',
+          });
+          return;
+        }
+
+        if (snapped.snappedProgressM > progressMRef.current + 3) {
+          advancePositionTo(snapped.snappedProgressM);
+        }
+      },
+      () => {
+        // Silent in drive view; Demo Panel replay works seamlessly at a desk
+      },
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, [advancePositionTo, isSimulatedMode, pushLog, route]);
+
+  // Demo Panel simulated car replay loop (10 Hz)
+  useEffect(() => {
+    if (!isSimPlaying || !route) return;
+    let lastTs = performance.now();
+
+    const intervalId = window.setInterval(() => {
+      const now = performance.now();
+      const dtSec = Math.min(0.25, (now - lastTs) / 1000);
+      lastTs = now;
+
+      if (!routeRef.current || !isSimPlayingRef.current) return;
+      const deltaM = BASE_SPEED_MPS * simSpeedRef.current * dtSec;
+      advancePositionTo(progressMRef.current + deltaM);
     }, 100);
 
     return () => window.clearInterval(intervalId);
-  }, [
-    enqueueDirectionsSpeech,
-    isSimPlaying,
-    pushLog,
-    recordLandmarkStop,
-    route,
-    triggerLandmarkQuiz,
-    triggerRegionWelcome,
-  ]);
+  }, [advancePositionTo, isSimPlaying, route]);
 
   const startSession = useCallback(
     async (selectedLang: LanguageCode, selectedRoute: RouteData | null) => {
@@ -1041,8 +1079,10 @@ export function useCoDriver(onFinishToSummary: () => void): {
 
       languageRef.current = selectedLang;
       routeRef.current = selectedRoute;
+      cumDistancesRef.current = selectedRoute ? computeCumulativeRouteDistances(selectedRoute) : [];
       progressMRef.current = 0;
       isSimPlayingRef.current = false;
+      gpsIgnoredByDemoRef.current = false;
       isPausedRef.current = false;
       isNavSpeakingRef.current = false;
       activeQuizRef.current = null;
@@ -1065,6 +1105,7 @@ export function useCoDriver(onFinishToSummary: () => void): {
       setRoute(selectedRoute);
       setProgressM(0);
       setIsSimPlaying(false);
+      setIsSimulatedMode(false);
       setStats(freshStats);
       setDebugLogs([]);
       setHeardCaption('');
@@ -1094,18 +1135,21 @@ export function useCoDriver(onFinishToSummary: () => void): {
       if (token !== sessionTokenRef.current) return;
 
       const scripts = HOST_SCRIPTS[selectedLang];
-
-      // Pre-cache maneuver audio and common host phrases in background (Section 5.1 & 5.5)
-      if (selectedRoute) {
-        for (const m of selectedRoute.maneuvers) {
-          const t = m.text[selectedLang] || m.text['en-IN'];
-          void voiceRef.current?.prefetch(scripts.nav800(t), selectedLang, 'directions');
-          void voiceRef.current?.prefetch(scripts.nav100(t), selectedLang, 'directions');
-        }
-      }
       void voiceRef.current?.prefetch(scripts.offer, selectedLang, 'quiz');
 
-      // Speak greeting and immediately offer first round
+      // Prefetch maneuvers already within 3 km of the start
+      if (selectedRoute) {
+        for (const m of selectedRoute.maneuvers) {
+          if (m.at_m <= DEFAULT_NAV_SETTINGS.prefetchAheadM) {
+            firedTriggersRef.current.maneuverPrefetched.add(m.id);
+            const baseText = m.text[selectedLang] || m.text['en-IN'];
+            const earlyText = m.text_early?.[selectedLang] || scripts.nav800(baseText);
+            void voiceRef.current?.prefetch(earlyText, selectedLang, 'directions');
+            void voiceRef.current?.prefetch(scripts.nav100(baseText), selectedLang, 'directions');
+          }
+        }
+      }
+
       const qToken = ++quizTokenRef.current;
       const routeName = selectedRoute
         ? selectedRoute.name[selectedLang] || selectedRoute.name['en-IN']
@@ -1113,7 +1157,9 @@ export function useCoDriver(onFinishToSummary: () => void): {
       const greetingText = scripts.greeting(Boolean(selectedRoute), routeName);
       pushLog({
         kind: 'event',
-        summary: `Session started (${selectedLang}${selectedRoute ? `, ${selectedRoute.route_id}` : ', quiz only'})`,
+        summary: selectedRoute
+          ? `Drive started (${selectedLang}) · ${selectedRoute.maneuvers.length} steps · ${selectedRoute.landmarks.length} landmarks · ${selectedRoute.regions.length} regions`
+          : `Quiz-only session started (${selectedLang})`,
       });
 
       const ok = await speakQuiz(greetingText, qToken);
@@ -1144,7 +1190,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
 
     onFinishToSummary();
 
-    // Speak warm goodbye on Summary screen (Section 4.3)
     const scripts = HOST_SCRIPTS[languageRef.current];
     const { correctCount, questionsAsked } = statsRef.current;
     const goodbyeLine = scripts.goodbye(correctCount, questionsAsked);
@@ -1166,13 +1211,25 @@ export function useCoDriver(onFinishToSummary: () => void): {
     void executeVoiceCommand('repeat');
   }, [executeVoiceCommand]);
 
+  const engageDemoSimulation = useCallback(() => {
+    if (!gpsIgnoredByDemoRef.current) {
+      gpsIgnoredByDemoRef.current = true;
+      setIsSimulatedMode(true);
+      pushLog({
+        kind: 'gps',
+        summary: 'Switched to Demo Panel replay (live GPS updates ignored for rest of trip)',
+      });
+    }
+  }, [pushLog]);
+
   const toggleSimPlay = useCallback(() => {
     if (!routeRef.current) return;
+    engageDemoSimulation();
     const next = !isSimPlayingRef.current;
     isSimPlayingRef.current = next;
     setIsSimPlaying(next);
     pushLog({ kind: 'event', summary: next ? 'Car replay started' : 'Car replay paused' });
-  }, [pushLog]);
+  }, [engageDemoSimulation, pushLog]);
 
   const setSimSpeed = useCallback(
     (speed: DemoSpeed) => {
@@ -1187,6 +1244,8 @@ export function useCoDriver(onFinishToSummary: () => void): {
     (targetM: number, label: string) => {
       const currentRoute = routeRef.current;
       if (!currentRoute) return;
+      engageDemoSimulation();
+
       const clamped = Math.max(0, Math.min(currentRoute.length_m - 100, targetM));
       progressMRef.current = clamped;
       setProgressM(clamped);
@@ -1195,7 +1254,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
         isInDirectionsFirstZone(currentRoute, clamped, DEFAULT_NAV_SETTINGS)
       );
 
-      // Auto-start replay so the jumped trigger plays cleanly
       if (!isSimPlayingRef.current) {
         isSimPlayingRef.current = true;
         setIsSimPlaying(true);
@@ -1206,30 +1264,28 @@ export function useCoDriver(onFinishToSummary: () => void): {
         summary: `Jumped to ${label} (${Math.round(clamped)} m)`,
       });
     },
-    [pushLog]
+    [engageDemoSimulation, pushLog]
   );
 
   const jumpToNextTurn = useCallback(() => {
     const currentRoute = routeRef.current;
-    if (!currentRoute) return;
+    if (!currentRoute || currentRoute.maneuvers.length === 0) return;
     const nextM =
       currentRoute.maneuvers.find((m) => m.at_m > progressMRef.current + 950) ??
       currentRoute.maneuvers[0];
     if (!nextM) return;
-    // Land ~1020m before the turn so the car enters the 900m zone & fires the 800m cue cleanly
     jumpToDistance(Math.max(0, nextM.at_m - 1020), `next turn (${nextM.icon})`);
   }, [jumpToDistance]);
 
   const jumpToNextLandmark = useCallback(() => {
     const currentRoute = routeRef.current;
-    if (!currentRoute) return;
+    if (!currentRoute || currentRoute.landmarks.length === 0) return;
     const nextLm =
       getNextLandmark(currentRoute, progressMRef.current + 2050) ??
       getNextLandmark(currentRoute, progressMRef.current) ??
       currentRoute.landmarks[0];
     if (!nextLm) return;
 
-    // Clear any blocking trivia offer so landmark quiz triggers cleanly for demo
     if (phaseRef.current === 'OFFER' || activeQuizRef.current?.question.type === 'trivia') {
       quizTokenRef.current += 1;
       voiceRef.current?.stopListening();
@@ -1240,17 +1296,15 @@ export function useCoDriver(onFinishToSummary: () => void): {
       setPhaseSafe('IDLE');
     }
 
-    // Land ~2050m before the landmark so the 2km trigger fires right away
     jumpToDistance(Math.max(0, nextLm.at_m - 2050), `landmark (${nextLm.name[languageRef.current]})`);
   }, [jumpToDistance, setPhaseSafe]);
 
   const jumpToNextRegion = useCallback(() => {
     const currentRoute = routeRef.current;
-    if (!currentRoute) return;
+    if (!currentRoute || currentRoute.regions.length === 0) return;
     const nextReg = getNextRegion(currentRoute, progressMRef.current) ?? currentRoute.regions[0];
     if (!nextReg) return;
 
-    // Clear any blocking trivia offer so region welcome triggers cleanly for demo
     if (phaseRef.current === 'OFFER' || activeQuizRef.current?.question.type === 'trivia') {
       quizTokenRef.current += 1;
       voiceRef.current?.stopListening();
@@ -1261,30 +1315,25 @@ export function useCoDriver(onFinishToSummary: () => void): {
       setPhaseSafe('IDLE');
     }
 
-    // Land ~150m before boundary so the car crosses smoothly in seconds
     jumpToDistance(
       Math.max(0, nextReg.enter_at_m - 150),
       `region (${nextReg.name[languageRef.current]})`
     );
   }, [jumpToDistance, setPhaseSafe]);
 
-  const submitTypedInput = useCallback(
-    (text: string) => {
-      const cleaned = text.trim();
-      if (!cleaned) return;
-      voiceRef.current?.stopListening();
-      setIsListening(false);
-      void handleUserInputRef.current(cleaned);
-    },
-    []
-  );
+  const submitTypedInput = useCallback((text: string) => {
+    const cleaned = text.trim();
+    if (!cleaned) return;
+    voiceRef.current?.stopListening();
+    setIsListening(false);
+    void handleUserInputRef.current(cleaned);
+  }, []);
 
   const triggerOfferNow = useCallback(() => {
     if (isPausedRef.current) return;
     void runOfferRoundRef.current();
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     const vc = voiceRef.current;
     return () => {
@@ -1293,7 +1342,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
     };
   }, [clearOfferTimer]);
 
-  // Derived HUD values
   const isDirectionsFirst = Boolean(
     isInDirectionsFirstZone(route, progressM, DEFAULT_NAV_SETTINGS)
   );
@@ -1306,12 +1354,44 @@ export function useCoDriver(onFinishToSummary: () => void): {
       : route.start_region[language] || route.start_region['en-IN']
     : HOST_SCRIPTS[language].ui.quiz;
 
+  const actions = useMemo<CoDriverActions>(
+    () => ({
+      startSession,
+      stopSession,
+      togglePause,
+      skipCurrent,
+      repeatCurrent,
+      toggleSimPlay,
+      setSimSpeed,
+      jumpToNextTurn,
+      jumpToNextLandmark,
+      jumpToNextRegion,
+      submitTypedInput,
+      triggerOfferNow,
+    }),
+    [
+      jumpToNextLandmark,
+      jumpToNextRegion,
+      jumpToNextTurn,
+      repeatCurrent,
+      setSimSpeed,
+      skipCurrent,
+      startSession,
+      stopSession,
+      submitTypedInput,
+      togglePause,
+      toggleSimPlay,
+      triggerOfferNow,
+    ]
+  );
+
   return {
     state: {
       language,
       route,
       progressM,
       isSimPlaying,
+      isSimulatedMode,
       simSpeed,
       phase,
       activeChannel,
@@ -1330,19 +1410,6 @@ export function useCoDriver(onFinishToSummary: () => void): {
       debugLogs,
       isLoading,
     },
-    actions: {
-      startSession,
-      stopSession,
-      togglePause,
-      skipCurrent,
-      repeatCurrent,
-      toggleSimPlay,
-      setSimSpeed,
-      jumpToNextTurn,
-      jumpToNextLandmark,
-      jumpToNextRegion,
-      submitTypedInput,
-      triggerOfferNow,
-    },
+    actions,
   };
 }

@@ -5,7 +5,12 @@ export interface NavZoneSettings {
   directionsZoneAfterM: number; // Default 100 m after turn
   announceEarlyM: number; // Default 800 m before turn
   announceFinalM: number; // Default 100 m before turn
+  minGapForEarlyAnnounceM: number; // Default 900 m gap from previous maneuver (Spec 5.1)
+  prefetchAheadM: number; // Default 3000 m lookahead for maneuver audio caching (Spec 5.1)
   landmarkTriggerBeforeM: number; // Default 2000 m before landmark
+  gpsSnapBehindM: number; // Default 200 m behind car (Spec 5.1)
+  gpsSnapAheadM: number; // Default 3000 m ahead of car (Spec 5.1)
+  gpsMaxOffRouteM: number; // Default 100 m off-route ignore threshold (Spec 5.1)
 }
 
 export const DEFAULT_NAV_SETTINGS: NavZoneSettings = {
@@ -13,11 +18,27 @@ export const DEFAULT_NAV_SETTINGS: NavZoneSettings = {
   directionsZoneAfterM: 100,
   announceEarlyM: 800,
   announceFinalM: 100,
+  minGapForEarlyAnnounceM: 900,
+  prefetchAheadM: 3000,
   landmarkTriggerBeforeM: 2000,
+  gpsSnapBehindM: 200,
+  gpsSnapAheadM: 3000,
+  gpsMaxOffRouteM: 100,
 };
 
 // Base highway cruise speed at 1x speed (~80 km/h = 22.2 m/s)
 export const BASE_SPEED_MPS = 22.2;
+
+export function haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 export function formatDistance(meters: number): string {
   const clamped = Math.max(0, Math.round(meters));
@@ -80,51 +101,115 @@ export function getNextRegion(route: RouteData | null, progressM: number): Regio
 }
 
 /**
- * Interpolates [lat, lon] and heading angle along the route polyline for a given progress_m.
+ * Computes cumulative geodesic meter distances at every vertex of route.path.
+ */
+export function computeCumulativeRouteDistances(route: RouteData): number[] {
+  const pts = route.path;
+  if (pts.length === 0) return [];
+  const cum: number[] = [0];
+  for (let i = 1; i < pts.length; i++) {
+    cum.push(cum[i - 1] + haversineMeters(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]));
+  }
+  const rawTotal = cum[cum.length - 1] || 1;
+  const scale = route.length_m > 0 ? route.length_m / rawTotal : 1;
+  return cum.map((d) => d * scale);
+}
+
+/**
+ * Spec 5.1 GPS Snapping:
+ * Snaps a GPS fix to the nearest point along the route within [progressM - 200m, progressM + 3000m].
+ * Ignores fixes > 100m away from the route line and only moves progress forward.
+ */
+export function snapGpsFixToRoute(
+  route: RouteData,
+  cumDistances: number[],
+  currentProgressM: number,
+  lat: number,
+  lon: number,
+  settings: NavZoneSettings = DEFAULT_NAV_SETTINGS
+): { snappedProgressM: number; offRouteMeters: number } | null {
+  const pts = route.path;
+  if (pts.length < 2 || cumDistances.length !== pts.length) return null;
+
+  const minWindow = Math.max(0, currentProgressM - settings.gpsSnapBehindM);
+  const maxWindow = Math.min(route.length_m, currentProgressM + settings.gpsSnapAheadM);
+
+  let bestDist = Infinity;
+  let bestProgress = currentProgressM;
+
+  for (let i = 0; i < pts.length; i++) {
+    const dAlong = cumDistances[i];
+    if (dAlong < minWindow || dAlong > maxWindow) continue;
+    const distToFix = haversineMeters(lat, lon, pts[i][0], pts[i][1]);
+    if (distToFix < bestDist) {
+      bestDist = distToFix;
+      bestProgress = dAlong;
+    }
+  }
+
+  if (bestDist > settings.gpsMaxOffRouteM) {
+    return null;
+  }
+
+  return {
+    snappedProgressM: Math.max(currentProgressM, bestProgress),
+    offRouteMeters: Math.round(bestDist),
+  };
+}
+
+/**
+ * Interpolates [lat, lon] and compass heading along the route polyline for a given progress_m.
  */
 export function interpolateRoutePoint(
   route: RouteData,
-  progressM: number
-): { lat: number; lon: number; fraction: number; angleDeg: number } {
+  progressM: number,
+  cumDistances?: number[]
+): { lat: number; lon: number; fraction: number; angleDeg: number; headingCompassDeg: number } {
   const pts = route.path;
-  if (pts.length === 0) return { lat: 0, lon: 0, fraction: 0, angleDeg: 0 };
-  if (pts.length === 1) return { lat: pts[0][0], lon: pts[0][1], fraction: 0, angleDeg: 0 };
-
-  // Compute cumulative Euclidean segment lengths in coordinate space
-  const segLengths: number[] = [];
-  let totalLen = 0;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const dLat = pts[i + 1][0] - pts[i][0];
-    const dLon = pts[i + 1][1] - pts[i][1];
-    const seg = Math.hypot(dLat, dLon);
-    segLengths.push(seg);
-    totalLen += seg;
+  if (pts.length === 0) {
+    return { lat: 0, lon: 0, fraction: 0, angleDeg: 0, headingCompassDeg: 0 };
+  }
+  if (pts.length === 1) {
+    return { lat: pts[0][0], lon: pts[0][1], fraction: 0, angleDeg: 0, headingCompassDeg: 0 };
   }
 
-  const fraction = Math.max(0, Math.min(1, progressM / Math.max(1, route.length_m)));
-  const targetLen = fraction * totalLen;
+  const cum = cumDistances && cumDistances.length === pts.length
+    ? cumDistances
+    : computeCumulativeRouteDistances(route);
 
-  let acc = 0;
-  for (let i = 0; i < segLengths.length; i++) {
-    const seg = segLengths[i];
-    if (acc + seg >= targetLen || i === segLengths.length - 1) {
-      const localT = seg > 0 ? Math.max(0, Math.min(1, (targetLen - acc) / seg)) : 0;
-      const lat = pts[i][0] + (pts[i + 1][0] - pts[i][0]) * localT;
-      const lon = pts[i][1] + (pts[i + 1][1] - pts[i][1]) * localT;
-      // SVG Y increases downward while latitude increases upward
-      const dx = pts[i + 1][1] - pts[i][1];
-      const dy = -(pts[i + 1][0] - pts[i][0]);
-      const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
-      return { lat, lon, fraction, angleDeg };
-    }
-    acc += seg;
+  const totalLen = Math.max(1, cum[cum.length - 1] || route.length_m);
+  const targetM = Math.max(0, Math.min(totalLen, progressM));
+  const fraction = targetM / totalLen;
+
+  // Binary search for segment containing targetM
+  let lo = 0;
+  let hi = cum.length - 2;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (cum[mid] <= targetM) lo = mid;
+    else hi = mid - 1;
   }
 
-  const last = pts[pts.length - 1];
-  return { lat: last[0], lon: last[1], fraction: 1, angleDeg: 0 };
+  const i = lo;
+  const segStart = cum[i];
+  const segEnd = cum[i + 1];
+  const segLen = segEnd - segStart;
+  const localT = segLen > 0 ? Math.max(0, Math.min(1, (targetM - segStart) / segLen)) : 0;
+
+  const lat = pts[i][0] + (pts[i + 1][0] - pts[i][0]) * localT;
+  const lon = pts[i][1] + (pts[i + 1][1] - pts[i][1]) * localT;
+
+  const dx = pts[i + 1][1] - pts[i][1];
+  const dy = -(pts[i + 1][0] - pts[i][0]);
+  const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+  // Compass heading (0 = North, 90 = East, 180 = South, 270 = West)
+  const headingCompassDeg = (angleDeg + 90 + 360) % 360;
+
+  return { lat, lon, fraction, angleDeg, headingCompassDeg };
 }
 
 export interface RouteStepEvents {
+  maneuversToPrefetch: Maneuver[];
   maneuvers800: Maneuver[];
   maneuvers100: Maneuver[];
   landmarksDue: Landmark[];
@@ -134,6 +219,7 @@ export interface RouteStepEvents {
 }
 
 export interface FiredRouteTriggers {
+  maneuverPrefetched: Set<string>;
   maneuver800: Set<string>;
   maneuver100: Set<string>;
   landmarkDue: Set<string>;
@@ -143,6 +229,7 @@ export interface FiredRouteTriggers {
 
 export function createFiredTriggers(): FiredRouteTriggers {
   return {
+    maneuverPrefetched: new Set(),
     maneuver800: new Set(),
     maneuver100: new Set(),
     landmarkDue: new Set(),
@@ -151,10 +238,6 @@ export function createFiredTriggers(): FiredRouteTriggers {
   };
 }
 
-/**
- * Marks triggers already behind a jump point as fired so jumping forward
- * doesn't flood old announcements, while keeping the upcoming target fresh.
- */
 export function syncTriggersForJump(
   route: RouteData,
   targetProgressM: number,
@@ -200,21 +283,38 @@ export function collectRouteEvents(
   fired: FiredRouteTriggers,
   settings: NavZoneSettings = DEFAULT_NAV_SETTINGS
 ): RouteStepEvents {
+  const maneuversToPrefetch: Maneuver[] = [];
   const maneuvers800: Maneuver[] = [];
   const maneuvers100: Maneuver[] = [];
   const landmarksDue: Landmark[] = [];
   const landmarksPassed: Landmark[] = [];
   const regionsEntered: Region[] = [];
 
-  for (const m of route.maneuvers) {
+  for (let i = 0; i < route.maneuvers.length; i++) {
+    const m = route.maneuvers[i];
+    const prevM = i > 0 ? route.maneuvers[i - 1] : null;
     const dist = m.at_m - progressM;
-    if (dist <= settings.announceEarlyM && dist > settings.announceFinalM && !fired.maneuver800.has(m.id)) {
+
+    // Spec 5.1: pre-cache maneuver audio when ~3 km away
+    if (dist <= settings.prefetchAheadM && dist > 0 && !fired.maneuverPrefetched.has(m.id)) {
+      fired.maneuverPrefetched.add(m.id);
+      maneuversToPrefetch.push(m);
+    }
+
+    // Spec 5.1: skip the 800 m sentence if previous maneuver was < 900 m earlier
+    const hasRoomFor800 = !prevM || m.at_m - prevM.at_m >= settings.minGapForEarlyAnnounceM;
+    if (
+      hasRoomFor800 &&
+      dist <= settings.announceEarlyM &&
+      dist > settings.announceFinalM &&
+      !fired.maneuver800.has(m.id)
+    ) {
       fired.maneuver800.add(m.id);
       maneuvers800.push(m);
     }
+
     if (dist <= settings.announceFinalM && dist >= -80 && !fired.maneuver100.has(m.id)) {
       fired.maneuver100.add(m.id);
-      // Avoid firing 800m after 100m
       fired.maneuver800.add(m.id);
       maneuvers100.push(m);
     }
@@ -240,6 +340,7 @@ export function collectRouteEvents(
   }
 
   return {
+    maneuversToPrefetch,
     maneuvers800,
     maneuvers100,
     landmarksDue,

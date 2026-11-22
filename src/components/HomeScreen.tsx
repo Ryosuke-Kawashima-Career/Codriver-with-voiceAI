@@ -1,33 +1,170 @@
-import { useState } from 'react';
-import { ArrowRight, Compass, Headphones, Mic, MicOff, Route as RouteIcon } from 'lucide-react';
-import type { LanguageCode, RouteSummary } from '../types';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import {
+  ArrowRight,
+  Check,
+  Compass,
+  Headphones,
+  Loader2,
+  LocateFixed,
+  MapPin,
+  Mic,
+  MicOff,
+  RefreshCw,
+  Search,
+} from 'lucide-react';
+import type { GeocodeResult, GpsFix, LanguageCode } from '../types';
 import { LANGUAGES } from '../engine/i18n';
+import { formatDistance } from '../engine/routeReplay';
 
 interface HomeScreenProps {
-  routes: RouteSummary[];
   selectedLanguage: LanguageCode;
-  selectedRouteId: string | null;
-  onSelectLanguage: (lang: LanguageCode) => void;
-  onSelectRoute: (routeId: string | null) => void;
-  onStartDrive: () => Promise<void>;
+  gpsFix: GpsFix | null;
+  selectedDestination: GeocodeResult | null;
+  isQuizOnly: boolean;
+  routeError: string | null;
   isStarting: boolean;
+  onSelectLanguage: (lang: LanguageCode) => void;
+  onUpdateGpsFix: (fix: GpsFix | null) => void;
+  onSelectDestination: (dest: GeocodeResult | null) => void;
+  onToggleQuizOnly: (quizOnly: boolean) => void;
+  onStartDrive: () => Promise<void>;
 }
 
+// Bengaluru demo start point offered ONLY when desktop browser blocks GPS so reviewers can still test live routes
+const DEMO_BENGALURU_FIX: GpsFix = {
+  lat: 12.9141,
+  lon: 77.4856,
+  accuracyM: 15,
+  isDemoFallback: true,
+};
+
 export function HomeScreen({
-  routes,
   selectedLanguage,
-  selectedRouteId,
-  onSelectLanguage,
-  onSelectRoute,
-  onStartDrive,
+  gpsFix,
+  selectedDestination,
+  isQuizOnly,
+  routeError,
   isStarting,
+  onSelectLanguage,
+  onUpdateGpsFix,
+  onSelectDestination,
+  onToggleQuizOnly,
+  onStartDrive,
 }: HomeScreenProps) {
+  const [gpsState, setGpsState] = useState<'locating' | 'found' | 'denied' | 'error'>(
+    gpsFix ? 'found' : 'locating'
+  );
+  const [gpsErrorMsg, setGpsErrorMsg] = useState<string | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<GeocodeResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
+
   const [micStatus, setMicStatus] = useState<'idle' | 'checking' | 'denied' | 'unsupported'>('idle');
+
+  const requestGps = useCallback(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setGpsState('error');
+      setGpsErrorMsg('Location services are not available in this browser.');
+      return;
+    }
+
+    setGpsState('locating');
+    setGpsErrorMsg(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        onUpdateGpsFix({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          accuracyM: Math.round(pos.coords.accuracy || 25),
+        });
+        setGpsState('found');
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setGpsState('denied');
+          setGpsErrorMsg('Location permission was denied. Allow GPS access and tap Retry.');
+        } else {
+          setGpsState('error');
+          setGpsErrorMsg('Could not detect your current location. Check GPS and tap Retry.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
+    );
+  }, [onUpdateGpsFix]);
+
+  // Spec 4.1: Detect current location by GPS when Home opens
+  useEffect(() => {
+    if (!gpsFix) {
+      requestGps();
+    } else {
+      setGpsState('found');
+    }
+  }, [gpsFix, requestGps]);
+
+  const handleUseDemoGps = () => {
+    onUpdateGpsFix(DEMO_BENGALURU_FIX);
+    setGpsState('found');
+    setGpsErrorMsg(null);
+  };
+
+  // Spec 4.1: Search runs on submit only, not while typing (up to 5 results, nearest first)
+  const handleSearchSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setSearchError('Enter at least 2 characters to search for a destination.');
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    setHasSearched(true);
+
+    try {
+      const params = new URLSearchParams({
+        q,
+        lang: selectedLanguage,
+      });
+      if (gpsFix) {
+        params.set('lat', String(gpsFix.lat));
+        params.set('lon', String(gpsFix.lon));
+      }
+      const res = await fetch(`/api/geocode?${params.toString()}`);
+      const data = (await res.json()) as { results?: GeocodeResult[]; error?: string };
+      if (!res.ok) {
+        setSearchResults([]);
+        setSearchError(data.error || 'Could not search destinations right now.');
+        return;
+      }
+      setSearchResults(data.results ?? []);
+      if (!data.results || data.results.length === 0) {
+        setSearchError('No matching destinations found. Try a city or landmark name.');
+      }
+    } catch {
+      setSearchResults([]);
+      setSearchError('Network error while searching. Please try again.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handlePickDestination = (place: GeocodeResult) => {
+    onToggleQuizOnly(false);
+    onSelectDestination(place);
+  };
+
+  const handleSelectQuizOnly = () => {
+    onToggleQuizOnly(true);
+    onSelectDestination(null);
+  };
 
   const handleStartClick = async () => {
     setMicStatus('checking');
 
-    // Verify microphone access cleanly before entering Drive (Section 4.1)
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setMicStatus('unsupported');
       return;
@@ -35,7 +172,6 @@ export function HomeScreen({
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Release immediately; Web Speech API opens the mic strictly during LISTEN phases
       stream.getTracks().forEach((track) => track.stop());
       setMicStatus('idle');
       await onStartDrive();
@@ -44,76 +180,81 @@ export function HomeScreen({
     }
   };
 
+  const canStart = isQuizOnly || (Boolean(gpsFix) && Boolean(selectedDestination));
+
   return (
-    <div className="min-h-[100dvh] w-full bg-[#0B0E14] text-[#F3F5F8] flex flex-col">
-      {/* Minimal single-row top bar */}
-      <header className="w-full border-b border-white/[0.07]">
+    <div className="min-h-[100dvh] w-full bg-[#F8FAFC] text-[#0F172A] flex flex-col">
+      {/* Clean single-row top bar */}
+      <header className="w-full bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-6">
           <div className="flex items-center gap-2.5 whitespace-nowrap shrink-0">
-            <Compass className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-            <span className="text-lg font-bold tracking-tight text-white">Safar</span>
+            <Compass className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+            <span className="text-lg font-bold tracking-tight text-slate-900">Safar</span>
           </div>
-          <span className="text-xs sm:text-sm text-slate-400 whitespace-nowrap shrink-0">
+          <span className="text-xs sm:text-sm text-slate-500 whitespace-nowrap shrink-0">
             Press D in drive for Demo Panel
           </span>
         </div>
       </header>
 
-      {/* Main balanced two-column desktop / single-column mobile workspace */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12 flex flex-col justify-center">
+      {/* Responsive 2-column desktop / single-column mobile workspace */}
+      <main className="flex-1 w-full max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-10 flex flex-col justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          {/* Left column: Hero & overview */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* Left column: Value prop & key interaction principles */}
+          <div className="lg:col-span-5 space-y-6 lg:pt-2">
             <div className="space-y-3">
               <h1
-                className="text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-tight text-white leading-[1.12]"
+                className="text-3xl sm:text-4xl lg:text-[40px] font-bold tracking-tight text-slate-900 leading-[1.12]"
                 style={{ textWrap: 'balance' }}
               >
-                Your voice co-driver for the highway ahead.
+                Your voice co-driver for the road ahead.
               </h1>
-              <p className="text-base text-slate-300 leading-relaxed max-w-prose">
-                Navigation comes first. Spoken turn-by-turn directions always take priority, while
-                relaxed voice quizzes pass the miles in Hindi, Tamil, or English.
+              <p className="text-base text-slate-600 leading-relaxed max-w-prose">
+                Live GPS navigation on Google Maps paired with hands-free highway quizzes in Hindi,
+                Tamil, or English. Turn-by-turn directions always come first.
               </p>
             </div>
 
-            <div className="pt-2 border-t border-white/[0.08] space-y-3 text-sm text-slate-400">
+            <div className="pt-4 border-t border-slate-200 space-y-3.5 text-sm text-slate-600">
               <div className="flex items-start gap-3">
-                <span className="text-emerald-400 font-mono text-xs pt-0.5">01</span>
+                <span className="text-emerald-700 font-mono text-xs font-semibold pt-0.5">01</span>
                 <p>
-                  <strong className="text-slate-200 font-medium">Directions-first audio</strong> —
-                  turns interrupt quizzes immediately and hold new questions near junctions.
+                  <strong className="text-slate-900 font-semibold">Real routes &amp; GPS</strong> —
+                  search any destination, follow live turn-by-turn guidance, and trigger curated
+                  landmarks within 5 km of your path.
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="text-amber-400 font-mono text-xs pt-0.5">02</span>
+                <span className="text-amber-700 font-mono text-xs font-semibold pt-0.5">02</span>
                 <p>
-                  <strong className="text-slate-200 font-medium">Hands-free commands</strong> — say
-                  skip, repeat, pause, resume, or stop at any time.
+                  <strong className="text-slate-900 font-semibold">Navigation-first audio</strong> —
+                  junction directions interrupt quizzes immediately and hold new questions near
+                  turns.
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <span className="text-slate-300 font-mono text-xs pt-0.5">03</span>
+                <span className="text-slate-500 font-mono text-xs font-semibold pt-0.5">03</span>
                 <p>
-                  <strong className="text-slate-200 font-medium">Zero pressure</strong> — no
-                  countdowns, no streaks, just warm answers and highway stories.
+                  <strong className="text-slate-900 font-semibold">Relaxed voice commands</strong> —
+                  say skip, repeat, pause, resume, or stop anytime. No timers, streaks, or red
+                  penalties.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Right column: Language + Route selection + Start CTA */}
-          <div className="lg:col-span-7 bg-[#141923] border border-white/[0.08] rounded-3xl p-5 sm:p-8 space-y-7">
-            {/* Step 1: Language picker */}
+          {/* Right column: Language, GPS Location, Destination Search, Start */}
+          <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-8 shadow-xs space-y-6">
+            {/* 1. Language picker */}
             <section aria-labelledby="language-heading" className="space-y-3">
               <div className="flex items-baseline justify-between gap-4">
-                <h2 id="language-heading" className="text-base font-semibold text-white">
-                  1. Choose voice language
+                <h2 id="language-heading" className="text-sm font-semibold text-slate-900">
+                  1. Voice language
                 </h2>
-                <span className="text-xs text-slate-400">Hindi · Tamil · English</span>
+                <span className="text-xs text-slate-500">Hindi · Tamil · English</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {LANGUAGES.map((lang) => {
                   const active = selectedLanguage === lang.code;
                   return (
@@ -122,125 +263,277 @@ export function HomeScreen({
                       type="button"
                       onClick={() => onSelectLanguage(lang.code)}
                       lang={lang.code}
-                      className={`text-left rounded-2xl p-4 min-h-[88px] border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                      className={`text-left rounded-2xl p-3.5 min-h-[78px] border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 ${
                         active
-                          ? 'bg-emerald-500/12 border-emerald-400/70 text-white'
-                          : 'bg-[#1B2230] border-white/[0.06] text-slate-300 hover:border-white/20 hover:bg-[#202838]'
+                          ? 'bg-emerald-50 border-emerald-600 text-slate-900'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-100/70'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-lg font-semibold leading-snug">
+                        <span className="text-base font-semibold leading-snug">
                           {lang.nativeLabel}
                         </span>
                         <span
                           className={`w-2.5 h-2.5 rounded-full ${
-                            active ? 'bg-emerald-400' : 'bg-white/15'
+                            active ? 'bg-emerald-600' : 'bg-slate-300'
                           }`}
                           aria-hidden="true"
                         />
                       </div>
-                      <p className="mt-1 text-xs text-slate-400 truncate">{lang.voiceLabel}</p>
+                      <p className="mt-1 text-xs text-slate-500 truncate">{lang.voiceLabel}</p>
                     </button>
                   );
                 })}
               </div>
             </section>
 
-            {/* Step 2: Route picker */}
-            <section aria-labelledby="route-heading" className="space-y-3">
-              <div className="flex items-baseline justify-between gap-4">
-                <h2 id="route-heading" className="text-base font-semibold text-white">
-                  2. Choose route
+            {/* 2. Current location (GPS) */}
+            <section
+              aria-labelledby="gps-heading"
+              className="pt-5 border-t border-slate-100 space-y-2.5"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <h2 id="gps-heading" className="text-sm font-semibold text-slate-900">
+                  2. Current location
                 </h2>
-                <span className="text-xs text-slate-400">Map + voice or quiz only</span>
-              </div>
-
-              <div className="space-y-2.5">
-                {routes.map((rt) => {
-                  const active = selectedRouteId === rt.route_id;
-                  const title = rt.name[selectedLanguage] || rt.name['en-IN'];
-                  const subtitle = rt.subtitle[selectedLanguage] || rt.subtitle['en-IN'];
-                  return (
-                    <button
-                      key={rt.route_id}
-                      type="button"
-                      onClick={() => onSelectRoute(rt.route_id)}
-                      lang={selectedLanguage}
-                      className={`w-full text-left rounded-2xl p-4 min-h-[68px] border transition-all duration-150 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
-                        active
-                          ? 'bg-emerald-500/12 border-emerald-400/70 text-white'
-                          : 'bg-[#1B2230] border-white/[0.06] text-slate-300 hover:border-white/20 hover:bg-[#202838]'
-                      }`}
-                    >
-                      <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                          active
-                            ? 'bg-emerald-500/20 text-emerald-300'
-                            : 'bg-white/[0.05] text-slate-400'
-                        }`}
-                      >
-                        <RouteIcon className="w-5 h-5" aria-hidden="true" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-base text-white truncate">{title}</div>
-                        <div className="text-xs text-slate-400 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                          <span>{subtitle}</span>
-                          <span aria-hidden="true">·</span>
-                          <span>{rt.maneuver_count} turns</span>
-                          <span aria-hidden="true">·</span>
-                          <span>{rt.landmark_count} landmarks</span>
-                          <span aria-hidden="true">·</span>
-                          <span>{rt.region_count} regions</span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-
-                {/* Quiz-only option */}
                 <button
                   type="button"
-                  onClick={() => onSelectRoute(null)}
-                  className={`w-full text-left rounded-2xl p-4 min-h-[64px] border transition-all duration-150 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
-                    selectedRouteId === null
-                      ? 'bg-amber-500/12 border-amber-400/70 text-white'
-                      : 'bg-[#1B2230] border-white/[0.06] text-slate-300 hover:border-white/20 hover:bg-[#202838]'
-                  }`}
+                  onClick={requestGps}
+                  className="text-xs font-medium text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1.5 min-h-[32px] px-2 rounded-lg hover:bg-emerald-50 transition-colors cursor-pointer whitespace-nowrap"
                 >
+                  <RefreshCw
+                    className={`w-3.5 h-3.5 ${gpsState === 'locating' ? 'animate-spin' : ''}`}
+                    aria-hidden="true"
+                  />
+                  <span>Refresh GPS</span>
+                </button>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                      selectedRouteId === null
-                        ? 'bg-amber-500/20 text-amber-300'
-                        : 'bg-white/[0.05] text-slate-400'
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      gpsState === 'found'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : gpsState === 'locating'
+                          ? 'bg-slate-200 text-slate-600'
+                          : 'bg-amber-100 text-amber-800'
                     }`}
                   >
-                    <Headphones className="w-5 h-5" aria-hidden="true" />
+                    {gpsState === 'locating' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <LocateFixed className="w-4 h-4" aria-hidden="true" />
+                    )}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-semibold text-base text-white">No route (quiz only)</div>
-                    <div className="text-xs text-slate-400 mt-0.5">
-                      Voice trivia host without map or turn-by-turn directions
-                    </div>
+                  <div className="min-w-0">
+                    {gpsState === 'locating' && (
+                      <p className="text-sm font-medium text-slate-700">Locating…</p>
+                    )}
+                    {gpsState === 'found' && gpsFix && (
+                      <>
+                        <p className="text-sm font-medium text-slate-900 tabular-nums">
+                          {gpsFix.isDemoFallback
+                            ? `Bengaluru demo location (±${gpsFix.accuracyM} m)`
+                            : `Current location found (±${gpsFix.accuracyM} m)`}
+                        </p>
+                        <p className="text-xs text-slate-500 font-mono tabular-nums">
+                          {gpsFix.lat.toFixed(4)}, {gpsFix.lon.toFixed(4)}
+                        </p>
+                      </>
+                    )}
+                    {(gpsState === 'denied' || gpsState === 'error') && (
+                      <p className="text-sm text-amber-900">{gpsErrorMsg}</p>
+                    )}
                   </div>
-                </button>
+                </div>
+
+                {(gpsState === 'denied' || gpsState === 'error') && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={requestGps}
+                      className="px-3.5 min-h-[38px] rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      Retry
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleUseDemoGps}
+                      className="px-3.5 min-h-[38px] rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      Use Bengaluru start
+                    </button>
+                  </div>
+                )}
               </div>
             </section>
 
-            {/* Microphone permission feedback (plain, friendly retry + typed fallback option) */}
+            {/* 3. Destination search (submit only, up to 5 nearest-first) OR No route */}
+            <section
+              aria-labelledby="dest-heading"
+              className="pt-5 border-t border-slate-100 space-y-3"
+            >
+              <div className="flex items-baseline justify-between gap-4">
+                <h2 id="dest-heading" className="text-sm font-semibold text-slate-900">
+                  3. Destination
+                </h2>
+                <span className="text-xs text-slate-500">
+                  Try Mysuru, Chennai, or Hyderabad
+                </span>
+              </div>
+
+              <form onSubmit={handleSearchSubmit} className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search
+                    className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                    aria-hidden="true"
+                  />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search a destination (e.g. Mysuru Palace)"
+                    className="w-full min-h-[48px] pl-10 pr-3.5 rounded-xl bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSearching}
+                  className="min-h-[48px] px-5 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white text-sm font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  {isSearching ? (
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <span>Search</span>
+                  )}
+                </button>
+              </form>
+
+              {searchError && (
+                <p role="alert" className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5">
+                  {searchError}
+                </p>
+              )}
+
+              {/* Up to 5 search results, nearest first */}
+              {hasSearched && searchResults.length > 0 && (
+                <ul className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white overflow-hidden">
+                  {searchResults.map((place) => {
+                    const isSelected = !isQuizOnly && selectedDestination?.id === place.id;
+                    return (
+                      <li key={place.id}>
+                        <button
+                          type="button"
+                          onClick={() => handlePickDestination(place)}
+                          className={`w-full text-left px-4 py-3 min-h-[56px] flex items-center justify-between gap-3 transition-colors cursor-pointer ${
+                            isSelected
+                              ? 'bg-emerald-50 text-slate-900'
+                              : 'hover:bg-slate-50 text-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3 min-w-0">
+                            <MapPin
+                              className={`w-4 h-4 mt-0.5 shrink-0 ${
+                                isSelected ? 'text-emerald-600' : 'text-slate-400'
+                              }`}
+                              aria-hidden="true"
+                            />
+                            <div className="min-w-0">
+                              <div className="text-sm font-semibold text-slate-900 truncate">
+                                {place.name}
+                              </div>
+                              <div className="text-xs text-slate-500 truncate">{place.address}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {place.distance_m !== undefined && (
+                              <span className="text-xs font-mono tabular-nums text-slate-500 whitespace-nowrap">
+                                {formatDistance(place.distance_m)}
+                              </span>
+                            )}
+                            {isSelected && (
+                              <Check className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                            )}
+                          </div>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              {/* Selected destination confirmation when search list is collapsed or already picked */}
+              {!isQuizOnly && selectedDestination && (
+                <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3.5 py-2.5 flex items-center justify-between gap-3 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2 min-w-0 text-emerald-900">
+                    <Check className="w-4 h-4 text-emerald-700 shrink-0" aria-hidden="true" />
+                    <span className="font-medium truncate">
+                      Selected: {selectedDestination.name}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onSelectDestination(null)}
+                    className="text-xs font-medium text-emerald-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+
+              {/* No route (quiz only) option */}
+              <button
+                type="button"
+                onClick={handleSelectQuizOnly}
+                className={`w-full text-left rounded-2xl p-3.5 min-h-[58px] border transition-all duration-150 flex items-center gap-3.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 ${
+                  isQuizOnly
+                    ? 'bg-amber-50 border-amber-500 text-slate-900'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-100/70'
+                }`}
+              >
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    isQuizOnly ? 'bg-amber-100 text-amber-800' : 'bg-white border border-slate-200 text-slate-500'
+                  }`}
+                >
+                  <Headphones className="w-4 h-4" aria-hidden="true" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-sm text-slate-900">No route (quiz only)</div>
+                  <div className="text-xs text-slate-500">
+                    Voice trivia host without map or turn-by-turn directions
+                  </div>
+                </div>
+                {isQuizOnly && <Check className="w-4 h-4 text-amber-700 shrink-0" aria-hidden="true" />}
+              </button>
+            </section>
+
+            {/* Route calculation error */}
+            {routeError && (
+              <div
+                role="alert"
+                className="rounded-2xl bg-amber-50 border border-amber-300 px-4 py-3 text-sm text-amber-950"
+              >
+                {routeError}
+              </div>
+            )}
+
+            {/* Microphone permission feedback */}
             {(micStatus === 'denied' || micStatus === 'unsupported') && (
               <div
                 role="alert"
-                className="rounded-2xl bg-amber-500/10 border border-amber-400/35 p-4 text-sm text-amber-100 space-y-3"
+                className="rounded-2xl bg-amber-50 border border-amber-300 p-4 text-sm text-amber-950 space-y-3"
               >
                 <div className="flex items-start gap-3">
-                  <MicOff className="w-5 h-5 text-amber-300 shrink-0 mt-0.5" aria-hidden="true" />
+                  <MicOff className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" aria-hidden="true" />
                   <div className="space-y-1">
-                    <p className="font-medium text-white">
+                    <p className="font-semibold text-slate-900">
                       {micStatus === 'denied'
                         ? 'Microphone access was blocked.'
                         : 'Microphone is unavailable in this browser.'}
                     </p>
-                    <p className="text-xs text-amber-100/80 leading-relaxed">
+                    <p className="text-xs text-slate-700 leading-relaxed">
                       Allow microphone permission in your browser bar and press Retry to answer by
                       voice, or continue and type answers inside the Demo Panel (press D).
                     </p>
@@ -250,14 +543,14 @@ export function HomeScreen({
                   <button
                     type="button"
                     onClick={handleStartClick}
-                    className="px-4 py-2 min-h-[40px] rounded-xl bg-amber-400 text-[#0B0E14] text-xs font-semibold hover:bg-amber-300 transition-colors whitespace-nowrap"
+                    className="px-4 py-2 min-h-[40px] rounded-xl bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 transition-colors cursor-pointer whitespace-nowrap"
                   >
                     Retry microphone
                   </button>
                   <button
                     type="button"
                     onClick={() => void onStartDrive()}
-                    className="px-4 py-2 min-h-[40px] rounded-xl bg-white/10 text-slate-100 text-xs font-medium hover:bg-white/15 transition-colors whitespace-nowrap"
+                    className="px-4 py-2 min-h-[40px] rounded-xl bg-white border border-slate-300 text-slate-800 text-xs font-medium hover:bg-slate-50 transition-colors cursor-pointer whitespace-nowrap"
                   >
                     Continue with typed fallback
                   </button>
@@ -265,24 +558,37 @@ export function HomeScreen({
               </div>
             )}
 
-            {/* Primary CTA */}
+            {/* Start button */}
             <div className="pt-1">
               <button
                 type="button"
                 onClick={handleStartClick}
-                disabled={isStarting || micStatus === 'checking'}
-                className="w-full min-h-[56px] px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] disabled:opacity-60 text-[#07120E] font-semibold text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                disabled={!canStart || isStarting || micStatus === 'checking'}
+                className="w-full min-h-[56px] px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] disabled:opacity-45 disabled:cursor-not-allowed text-white font-semibold text-base flex items-center justify-center gap-2.5 shadow-sm transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
               >
-                <Mic className="w-5 h-5" aria-hidden="true" />
+                {isStarting || micStatus === 'checking' ? (
+                  <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Mic className="w-5 h-5" aria-hidden="true" />
+                )}
                 <span className="whitespace-nowrap">
                   {micStatus === 'checking'
                     ? 'Checking microphone…'
                     : isStarting
-                      ? 'Preparing co-driver…'
+                      ? isQuizOnly
+                        ? 'Preparing co-driver…'
+                        : 'Calculating driving route…'
                       : 'Start'}
                 </span>
                 <ArrowRight className="w-5 h-5" aria-hidden="true" />
               </button>
+              {!canStart && (
+                <p className="mt-2 text-center text-xs text-slate-500">
+                  {!gpsFix
+                    ? 'Waiting for GPS location, or choose "No route (quiz only)".'
+                    : 'Search and pick a destination above, or choose "No route (quiz only)".'}
+                </p>
+              )}
             </div>
           </div>
         </div>

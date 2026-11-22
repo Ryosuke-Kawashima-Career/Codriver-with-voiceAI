@@ -17,7 +17,10 @@ interface DemoPanelProps {
   isOpen: boolean;
   onClose: () => void;
   hasRoute: boolean;
+  hasLandmarks: boolean;
+  hasRegions: boolean;
   isSimPlaying: boolean;
+  isSimulatedMode: boolean;
   simSpeed: DemoSpeed;
   progressM: number;
   isDirectionsFirst: boolean;
@@ -38,7 +41,10 @@ export function DemoPanel({
   isOpen,
   onClose,
   hasRoute,
+  hasLandmarks,
+  hasRegions,
   isSimPlaying,
+  isSimulatedMode,
   simSpeed,
   progressM,
   isDirectionsFirst,
@@ -66,30 +72,30 @@ export function DemoPanel({
   return (
     <aside
       aria-label="Demo controls panel"
-      className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#101520]/96 backdrop-blur-md border-l border-white/10 shadow-2xl flex flex-col"
+      className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white/98 backdrop-blur-md border-l border-slate-200 shadow-2xl flex flex-col text-slate-900"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
         <div>
-          <h2 className="text-sm font-semibold text-white">Demo Panel</h2>
-          <p className="text-xs text-slate-400">Press D to hide · Reviewer controls</p>
+          <h2 className="text-sm font-semibold text-slate-900">Demo Panel</h2>
+          <p className="text-xs text-slate-500">
+            Press D to hide · {isSimulatedMode ? 'Simulated replay (GPS paused)' : 'Live GPS active'}
+          </p>
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close demo panel"
-          className="w-10 h-10 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-slate-300 flex items-center justify-center transition-colors"
+          className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
-        {/* Route simulation replay controls */}
         {hasRoute && (
           <section className="space-y-3">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span className="font-medium text-slate-200">Route Replay</span>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span className="font-semibold text-slate-900">Route Replay</span>
               <span className="font-mono tabular-nums">
                 {formatDistance(progressM)}
                 {isDirectionsFirst ? ' · Directions-first zone' : ''}
@@ -100,10 +106,10 @@ export function DemoPanel({
               <button
                 type="button"
                 onClick={onToggleSimPlay}
-                className={`flex-1 min-h-[44px] px-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors whitespace-nowrap ${
+                className={`flex-1 min-h-[44px] px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap ${
                   isSimPlaying
-                    ? 'bg-amber-500/20 border border-amber-400/50 text-amber-200 hover:bg-amber-500/25'
-                    : 'bg-emerald-500 text-[#07120E] hover:bg-emerald-400'
+                    ? 'bg-amber-100 border border-amber-300 text-amber-950 hover:bg-amber-200/80'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
                 }`}
               >
                 {isSimPlaying ? (
@@ -119,17 +125,16 @@ export function DemoPanel({
                 )}
               </button>
 
-              {/* Speed segmented control */}
-              <div className="flex items-center p-1 rounded-xl bg-[#1A2130] border border-white/[0.07]">
+              <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200">
                 {SPEEDS.map((spd) => (
                   <button
                     key={spd}
                     type="button"
                     onClick={() => onSetSimSpeed(spd)}
-                    className={`px-3 min-h-[36px] rounded-lg text-xs font-mono font-semibold transition-colors whitespace-nowrap ${
+                    className={`px-3 min-h-[36px] rounded-lg text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap ${
                       simSpeed === spd
-                        ? 'bg-white text-[#0B0E14]'
-                        : 'text-slate-300 hover:text-white'
+                        ? 'bg-slate-900 text-white'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     {spd}x
@@ -138,41 +143,57 @@ export function DemoPanel({
               </div>
             </div>
 
-            {/* Jump buttons */}
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={onJumpNextTurn}
-                className="min-h-[44px] px-2.5 py-2 rounded-xl bg-[#1A2130] hover:bg-[#232C3F] border border-white/[0.08] text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
+                className="min-h-[44px] px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-medium text-slate-800 flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
               >
-                <CornerUpRight className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <CornerUpRight className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span>Next turn</span>
               </button>
               <button
                 type="button"
                 onClick={onJumpNextLandmark}
-                className="min-h-[44px] px-2.5 py-2 rounded-xl bg-[#1A2130] hover:bg-[#232C3F] border border-white/[0.08] text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
+                disabled={!hasLandmarks}
+                title={
+                  hasLandmarks
+                    ? 'Jump ~2 km before next landmark'
+                    : 'No curated landmarks within 5 km of this route'
+                }
+                className="min-h-[44px] px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-200 text-xs font-medium text-slate-800 flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
               >
-                <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                 <span>Landmark</span>
               </button>
               <button
                 type="button"
                 onClick={onJumpNextRegion}
-                className="min-h-[44px] px-2.5 py-2 rounded-xl bg-[#1A2130] hover:bg-[#232C3F] border border-white/[0.08] text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
+                disabled={!hasRegions}
+                title={
+                  hasRegions
+                    ? 'Jump right before next region boundary'
+                    : 'No curated regions entered by this route'
+                }
+                className="min-h-[44px] px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-200 text-xs font-medium text-slate-800 flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
               >
-                <Flag className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                <Flag className="w-3.5 h-3.5 text-sky-600 shrink-0" />
                 <span>Region</span>
               </button>
             </div>
+            {!hasLandmarks && !hasRegions && (
+              <p className="text-[11px] text-slate-500">
+                This route passes no curated places from the seed list, so trivia-only rounds will
+                play along the drive.
+              </p>
+            )}
           </section>
         )}
 
-        {/* Typed answer & voice command fallback */}
-        <section className="space-y-3 pt-4 border-t border-white/[0.08]">
+        <section className="space-y-3 pt-4 border-t border-slate-200">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-medium text-slate-200">Type an answer or voice command</span>
-            <span className="text-slate-400">Fallback input</span>
+            <span className="font-semibold text-slate-900">Type an answer or voice command</span>
+            <span className="text-slate-500">Fallback input</span>
           </div>
 
           <form onSubmit={handleSubmit} className="flex gap-2">
@@ -181,12 +202,12 @@ export function DemoPanel({
               value={typedText}
               onChange={(e) => setTypedText(e.target.value)}
               placeholder='e.g. "yes", "Kapil Dev", "skip", "repeat"'
-              className="flex-1 min-h-[44px] px-3.5 rounded-xl bg-[#18202E] border border-white/10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400"
+              className="flex-1 min-h-[44px] px-3.5 rounded-xl bg-slate-50 border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-emerald-600"
             />
             <button
               type="submit"
               aria-label="Send answer"
-              className="min-h-[44px] px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#0B0E14] font-semibold text-sm flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
+              className="min-h-[44px] px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
             >
               <Send className="w-4 h-4" />
               <span>Send</span>
@@ -197,14 +218,14 @@ export function DemoPanel({
             <button
               type="button"
               onClick={() => onSubmitTyped('yes')}
-              className="px-3 min-h-[36px] rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-xs text-slate-200 transition-colors"
+              className="px-3 min-h-[36px] rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-800 transition-colors cursor-pointer"
             >
               Say &ldquo;Yes&rdquo;
             </button>
             <button
               type="button"
               onClick={onRepeat}
-              className="px-3 min-h-[36px] rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-xs text-slate-200 inline-flex items-center gap-1.5 transition-colors"
+              className="px-3 min-h-[36px] rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-800 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Repeat</span>
@@ -212,7 +233,7 @@ export function DemoPanel({
             <button
               type="button"
               onClick={onOfferNow}
-              className="px-3 min-h-[36px] rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-xs text-slate-200 inline-flex items-center gap-1.5 transition-colors"
+              className="px-3 min-h-[36px] rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-800 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <MessageSquare className="w-3 h-3" />
               <span>Offer trivia</span>
@@ -220,26 +241,27 @@ export function DemoPanel({
           </div>
         </section>
 
-        {/* Speech Arbiter & Transcript Debug Log */}
-        <section className="space-y-2.5 pt-4 border-t border-white/[0.08]">
+        <section className="space-y-2.5 pt-4 border-t border-slate-200">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-medium text-slate-200">Speech Arbiter &amp; Transcript Debug</span>
-            <span className="font-mono text-slate-400 tabular-nums">{debugLogs.length} events</span>
+            <span className="font-semibold text-slate-900">
+              Speech Arbiter &amp; Transcript Debug
+            </span>
+            <span className="font-mono text-slate-500 tabular-nums">{debugLogs.length} events</span>
           </div>
 
-          <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
             {debugLogs.length === 0 ? (
               <p className="text-xs text-slate-500 py-3">
-                Arbiter decisions (played, held, dropped, interrupted) and transcript matches will
-                appear here.
+                Arbiter decisions (played, held, dropped, interrupted), GPS snaps, and transcript
+                matches appear here.
               </p>
             ) : (
               debugLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="rounded-xl bg-[#161D2B] border border-white/[0.06] px-3 py-2 text-xs space-y-1"
+                  className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs space-y-1"
                 >
-                  <div className="flex items-center justify-between gap-2 font-mono text-[11px] text-slate-400 tabular-nums">
+                  <div className="flex items-center justify-between gap-2 font-mono text-[11px] text-slate-500 tabular-nums">
                     <span>
                       {log.timestamp} · {formatDistance(log.distanceM)}
                     </span>
@@ -247,19 +269,19 @@ export function DemoPanel({
                       <span
                         className={`font-semibold ${
                           log.decision === 'played'
-                            ? 'text-emerald-300'
+                            ? 'text-emerald-700'
                             : log.decision === 'interrupted'
-                              ? 'text-sky-300'
-                              : 'text-amber-300'
+                              ? 'text-sky-700'
+                              : 'text-amber-700'
                         }`}
                       >
                         {log.decision}
                       </span>
                     )}
                   </div>
-                  <div className="text-slate-200 leading-snug">{log.summary}</div>
+                  <div className="text-slate-900 leading-snug">{log.summary}</div>
                   {log.detail && (
-                    <div className="text-slate-400 text-[11px] truncate" title={log.detail}>
+                    <div className="text-slate-500 text-[11px] truncate" title={log.detail}>
                       {log.detail}
                     </div>
                   )}

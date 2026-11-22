@@ -16,13 +16,14 @@ export interface Question {
 
 export type LocalizedText = Record<LanguageCode, string>;
 
-export type ManeuverIcon = 'left' | 'right' | 'exit' | 'roundabout' | 'straight';
+export type ManeuverIcon = 'left' | 'right' | 'exit' | 'roundabout' | 'straight' | 'arrive';
 
 export interface Maneuver {
   id: string;
   at_m: number;
   icon: ManeuverIcon;
   text: LocalizedText;
+  text_early?: Partial<LocalizedText>;
 }
 
 export interface Landmark {
@@ -39,30 +40,38 @@ export interface Region {
   name: LocalizedText;
   enter_at_m: number;
   welcome: LocalizedText;
-  greeting: string;
+  greeting: LocalizedText;
   question_id: string;
 }
 
 export interface RouteData {
   route_id: string;
   name: LocalizedText;
-  subtitle: LocalizedText;
+  subtitle?: LocalizedText;
   length_m: number;
+  duration_s?: number;
   start_region: LocalizedText;
   path: [number, number][];
   maneuvers: Maneuver[];
   landmarks: Landmark[];
   regions: Region[];
+  provider?: 'google-routes' | 'osrm' | 'fallback';
 }
 
-export interface RouteSummary {
-  route_id: string;
-  name: LocalizedText;
-  subtitle: LocalizedText;
-  length_m: number;
-  maneuver_count: number;
-  landmark_count: number;
-  region_count: number;
+export interface GeocodeResult {
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lon: number;
+  distance_m?: number;
+}
+
+export interface GpsFix {
+  lat: number;
+  lon: number;
+  accuracyM: number;
+  isDemoFallback?: boolean;
 }
 
 export type AppScreen = 'home' | 'drive' | 'summary';
@@ -86,7 +95,7 @@ export interface DebugLogEntry {
   id: string;
   timestamp: string;
   distanceM: number;
-  kind: 'speech' | 'transcript' | 'event';
+  kind: 'speech' | 'transcript' | 'event' | 'gps';
   decision?: ArbiterDecision;
   channel?: SpeechChannel;
   summary: string;

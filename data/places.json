@@ -1,0 +1,182 @@
+{
+  "landmarks": [
+    {
+      "id": "lm_bidadi",
+      "name": {
+        "en-IN": "Bidadi",
+        "hi-IN": "बिदादी",
+        "ta-IN": "பிடதி"
+      },
+      "lat": 12.7975,
+      "lon": 77.3822,
+      "question_id": "q_lm_bidadi"
+    },
+    {
+      "id": "lm_ramanagara",
+      "name": {
+        "en-IN": "Ramadevara Betta (Ramanagara)",
+        "hi-IN": "रामदेवरा बेट्टा (रामनगरा)",
+        "ta-IN": "ராமதேவரா பெட்டா (ராமநகரா)"
+      },
+      "lat": 12.7523,
+      "lon": 77.3016,
+      "question_id": "q_lm_ramanagara"
+    },
+    {
+      "id": "lm_channapatna",
+      "name": {
+        "en-IN": "Channapatna",
+        "hi-IN": "चन्नापटना",
+        "ta-IN": "சன்னபட்னா"
+      },
+      "lat": 12.6518,
+      "lon": 77.2067,
+      "question_id": "q_lm_channapatna"
+    },
+    {
+      "id": "lm_maddur",
+      "name": {
+        "en-IN": "Maddur",
+        "hi-IN": "मद्दूर",
+        "ta-IN": "மத்தூர்"
+      },
+      "lat": 12.5844,
+      "lon": 77.0439,
+      "question_id": "q_lm_maddur"
+    },
+    {
+      "id": "lm_srirangapatna",
+      "name": {
+        "en-IN": "Srirangapatna",
+        "hi-IN": "श्रीरंगपटना",
+        "ta-IN": "ஸ்ரீரங்கப்பட்டினம்"
+      },
+      "lat": 12.4216,
+      "lon": 76.693,
+      "question_id": "q_lm_srirangapatna"
+    },
+    {
+      "id": "lm_mysuru_palace",
+      "name": {
+        "en-IN": "Mysuru Palace",
+        "hi-IN": "मैसूरु पैलेस",
+        "ta-IN": "மைசூரு அரண்மனை"
+      },
+      "lat": 12.3051,
+      "lon": 76.6551,
+      "question_id": "q_lm_mysuru_palace"
+    },
+    {
+      "id": "lm_marina_chennai",
+      "name": {
+        "en-IN": "Marina Beach",
+        "hi-IN": "मरीना बीच",
+        "ta-IN": "மெரினா கடற்கரை"
+      },
+      "lat": 13.05,
+      "lon": 80.2824,
+      "question_id": "q_lm_marina_chennai"
+    },
+    {
+      "id": "lm_charminar_hyderabad",
+      "name": {
+        "en-IN": "Charminar",
+        "hi-IN": "चारमीनार",
+        "ta-IN": "சார்மினார்"
+      },
+      "lat": 17.3616,
+      "lon": 78.4747,
+      "question_id": "q_lm_charminar_hyderabad"
+    }
+  ],
+  "regions": [
+    {
+      "id": "reg_mandya",
+      "name": {
+        "en-IN": "Mandya District",
+        "hi-IN": "मंड्या ज़िला",
+        "ta-IN": "மாண்டியா மாவட்டம்"
+      },
+      "lat": 12.5218,
+      "lon": 76.8951,
+      "radius_m": 12000,
+      "welcome": {
+        "en-IN": "Welcome to Mandya District, Karnataka's Sugar Bowl.",
+        "hi-IN": "कर्नाटक के शुगर बाउल, मंड्या ज़िले में आपका स्वागत है।",
+        "ta-IN": "கர்நாடகாவின் சர்க்கரைக் கிண்ணமான மாண்டியா மாவட்டத்திற்கு வரவேற்கிறோம்."
+      },
+      "greeting": {
+        "en-IN": "Namaskara!",
+        "hi-IN": "नमस्कार!",
+        "ta-IN": "நமஸ்காரா!"
+      },
+      "question_id": "q_reg_mandya"
+    },
+    {
+      "id": "reg_mysuru",
+      "name": {
+        "en-IN": "Mysuru",
+        "hi-IN": "मैसूरु",
+        "ta-IN": "மைசூரு"
+      },
+      "lat": 12.2958,
+      "lon": 76.6394,
+      "radius_m": 10000,
+      "welcome": {
+        "en-IN": "Welcome to Mysuru, the City of Palaces.",
+        "hi-IN": "महलों के शहर मैसूरु में आपका स्वागत है।",
+        "ta-IN": "அரண்மனைகளின் நகரமான மைசூருவுக்கு உங்களை வரவேற்கிறோம்."
+      },
+      "greeting": {
+        "en-IN": "Namaskara Mysuru!",
+        "hi-IN": "नमस्कार मैसूरु!",
+        "ta-IN": "நமஸ்காரா மைசூரு!"
+      },
+      "question_id": "q_reg_mysuru"
+    },
+    {
+      "id": "reg_chennai",
+      "name": {
+        "en-IN": "Chennai",
+        "hi-IN": "चेन्नई",
+        "ta-IN": "சென்னை"
+      },
+      "lat": 13.0827,
+      "lon": 80.2707,
+      "radius_m": 16000,
+      "welcome": {
+        "en-IN": "Welcome to Chennai, the cultural capital of Tamil Nadu.",
+        "hi-IN": "तमिलनाडु की सांस्कृतिक राजधानी चेन्नई में आपका स्वागत है।",
+        "ta-IN": "தமிழ்நாட்டின் பண்பாட்டுத் தலைநகரான சென்னைக்கு நல்வரவு."
+      },
+      "greeting": {
+        "en-IN": "Vanakkam!",
+        "hi-IN": "वणक्कम!",
+        "ta-IN": "வணக்கம்!"
+      },
+      "question_id": "q_reg_chennai"
+    },
+    {
+      "id": "reg_hyderabad",
+      "name": {
+        "en-IN": "Hyderabad",
+        "hi-IN": "हैदराबाद",
+        "ta-IN": "ஹைதராபாத்"
+      },
+      "lat": 17.385,
+      "lon": 78.4867,
+      "radius_m": 16000,
+      "welcome": {
+        "en-IN": "Welcome to Hyderabad, the City of Pearls.",
+        "hi-IN": "मोतियों के शहर हैदराबाद में आपका स्वागत है।",
+        "ta-IN": "முத்துக்களின் நகரமான ஹைதராபாத்திற்கு உங்களை வரவேற்கிறோம்."
+      },
+      "greeting": {
+        "en-IN": "Namaskaram!",
+        "hi-IN": "नमस्कारम!",
+        "ta-IN": "நமஸ்காரம்!"
+      },
+      "question_id": "q_reg_hyderabad"
+    }
+  ]
+}

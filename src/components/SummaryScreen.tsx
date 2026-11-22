@@ -25,74 +25,71 @@ export function SummaryScreen({
   return (
     <div
       lang={language}
-      className="min-h-[100dvh] w-full bg-[#0B0E14] text-[#F3F5F8] flex flex-col"
+      className="min-h-[100dvh] w-full bg-[#F8FAFC] text-[#0F172A] flex flex-col"
     >
-      <header className="w-full border-b border-white/[0.07]">
+      <header className="w-full bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Compass className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-            <span className="text-lg font-bold tracking-tight text-white">Safar</span>
+            <Compass className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+            <span className="text-lg font-bold tracking-tight text-slate-900">Safar</span>
           </div>
-          <span className="text-xs sm:text-sm text-slate-400">
+          <span className="text-xs sm:text-sm text-slate-500 truncate max-w-[200px] sm:max-w-none">
             {route ? route.name[language] || route.name['en-IN'] : 'Quiz Session'}
           </span>
         </div>
       </header>
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-5 sm:px-8 py-8 sm:py-12 flex flex-col justify-center">
-        <div className="bg-[#141923] border border-white/[0.08] rounded-3xl p-6 sm:p-10 space-y-8">
-          {/* Spoken goodbye headline */}
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-xs space-y-8">
           <div className="space-y-3">
-            <p className="text-xs font-medium text-emerald-400">Drive Summary</p>
+            <p className="text-xs font-semibold text-emerald-700">Drive Summary</p>
             <h1
-              className="text-2xl sm:text-3xl font-bold text-white leading-snug"
+              className="text-2xl sm:text-3xl font-bold text-slate-900 leading-snug"
               style={{ textWrap: 'balance' }}
             >
               {goodbye}
             </h1>
           </div>
 
-          {/* Core Stats (clean hairline split, no card-in-card nesting) */}
-          <div className="grid grid-cols-2 gap-6 py-6 border-y border-white/[0.08]">
+          <div className="grid grid-cols-2 gap-6 py-6 border-y border-slate-200">
             <div>
-              <div className="text-xs sm:text-sm text-slate-400">Questions asked</div>
-              <div className="text-3xl sm:text-4xl font-bold font-mono tabular-nums text-white mt-1">
+              <div className="text-xs sm:text-sm text-slate-500">Questions asked</div>
+              <div className="text-3xl sm:text-4xl font-bold font-mono tabular-nums text-slate-900 mt-1">
                 {stats.questionsAsked}
               </div>
             </div>
             <div>
-              <div className="text-xs sm:text-sm text-slate-400">Correct answers</div>
-              <div className="text-3xl sm:text-4xl font-bold font-mono tabular-nums text-emerald-300 mt-1">
+              <div className="text-xs sm:text-sm text-slate-500">Correct answers</div>
+              <div className="text-3xl sm:text-4xl font-bold font-mono tabular-nums text-emerald-700 mt-1">
                 {stats.correctCount}
               </div>
             </div>
           </div>
 
-          {/* Landmarks & Regions Passed */}
           {route && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <MapPin className="w-4 h-4 text-amber-400" aria-hidden="true" />
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <MapPin className="w-4 h-4 text-amber-600" aria-hidden="true" />
                   <span>Landmarks passed</span>
                 </div>
                 {stats.landmarksPassed.length === 0 ? (
-                  <p className="text-sm text-slate-400">No landmarks reached on this drive yet.</p>
+                  <p className="text-sm text-slate-500">No landmarks reached on this drive yet.</p>
                 ) : (
-                  <ul className="divide-y divide-white/[0.06]">
+                  <ul className="divide-y divide-slate-100">
                     {stats.landmarksPassed.map((lm) => (
                       <li
                         key={lm.id}
                         className="py-2.5 flex items-center justify-between gap-3 text-sm"
                       >
-                        <span className="text-slate-200">{lm.name}</span>
+                        <span className="text-slate-800">{lm.name}</span>
                         {lm.answeredCorrectly ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-300 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 whitespace-nowrap">
                             <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                             <span>Answered</span>
                           </span>
                         ) : (
-                          <span className="text-xs text-slate-500 whitespace-nowrap">Passed</span>
+                          <span className="text-xs text-slate-400 whitespace-nowrap">Passed</span>
                         )}
                       </li>
                     ))}
@@ -101,27 +98,27 @@ export function SummaryScreen({
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <Flag className="w-4 h-4 text-sky-400" aria-hidden="true" />
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <Flag className="w-4 h-4 text-sky-600" aria-hidden="true" />
                   <span>Regions crossed</span>
                 </div>
                 {stats.regionsPassed.length === 0 ? (
-                  <p className="text-sm text-slate-400">No new regions crossed on this drive yet.</p>
+                  <p className="text-sm text-slate-500">No new regions crossed on this drive yet.</p>
                 ) : (
-                  <ul className="divide-y divide-white/[0.06]">
+                  <ul className="divide-y divide-slate-100">
                     {stats.regionsPassed.map((reg) => (
                       <li
                         key={reg.id}
                         className="py-2.5 flex items-center justify-between gap-3 text-sm"
                       >
-                        <span className="text-slate-200">{reg.name}</span>
+                        <span className="text-slate-800">{reg.name}</span>
                         {reg.answeredCorrectly ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-300 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 whitespace-nowrap">
                             <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                             <span>Answered</span>
                           </span>
                         ) : (
-                          <span className="text-xs text-slate-500 whitespace-nowrap">Visited</span>
+                          <span className="text-xs text-slate-400 whitespace-nowrap">Visited</span>
                         )}
                       </li>
                     ))}
@@ -131,12 +128,11 @@ export function SummaryScreen({
             </div>
           )}
 
-          {/* Actions */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
               type="button"
               onClick={onPlayAgain}
-              className="min-h-[56px] px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-[#07120E] font-semibold text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap"
+              className="min-h-[56px] px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap"
             >
               <RotateCcw className="w-5 h-5" aria-hidden="true" />
               <span>Play again</span>
@@ -144,7 +140,7 @@ export function SummaryScreen({
             <button
               type="button"
               onClick={onGoHome}
-              className="min-h-[56px] px-6 rounded-2xl bg-[#1D2433] hover:bg-[#263044] text-white border border-white/[0.08] font-semibold text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap"
+              className="min-h-[56px] px-6 rounded-2xl bg-slate-100 hover:bg-slate-200/80 text-slate-900 border border-slate-200 font-semibold text-base flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap"
             >
               <Home className="w-5 h-5" aria-hidden="true" />
               <span>Home</span>
