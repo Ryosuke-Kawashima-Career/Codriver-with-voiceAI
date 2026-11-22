@@ -1,0 +1,521 @@
+[
+  {
+    "id": "q_lm_bidadi_en",
+    "group_id": "q_lm_bidadi",
+    "type": "landmark",
+    "language": "en-IN",
+    "prompt": "We are near a highway town famed for a wide, flat steamed breakfast served with butter and chutney. What dish is it?",
+    "clues": [
+      "Its Kannada name literally translates to plate idli.",
+      "It starts with the word Thatte."
+    ],
+    "answers": ["thatte idli", "thatte idly", "plate idli", "idli", "idly"],
+    "display_answer": "Thatte Idli",
+    "fun_fact": "Bidadi's iconic Thatte Idli gets its size from being steamed in wide circular plates instead of small moulds."
+  },
+  {
+    "id": "q_lm_bidadi_hi",
+    "group_id": "q_lm_bidadi",
+    "type": "landmark",
+    "language": "hi-IN",
+    "prompt": "हम एक ऐसे कस्बे के पास हैं जो मक्खन और चटनी के साथ परोसे जाने वाले बड़े चपटे नाश्ते के लिए मशहूर है। यह कौन-सा व्यंजन है?",
+    "clues": [
+      "कन्नड़ में इसका नाम प्लेट इडली होता है।",
+      "इसका नाम थट्टे से शुरू होता है।"
+    ],
+    "answers": ["thatte idli", "idli", "थट्टे इडली", "इडली", "तट्टे इडली"],
+    "display_answer": "थट्टे इडली (Thatte Idli)",
+    "fun_fact": "बिदादी की थट्टे इडली को छोटे साँचों की जगह चौड़ी थालियों में भाप पर पकाया जाता है।"
+  },
+  {
+    "id": "q_lm_bidadi_ta",
+    "group_id": "q_lm_bidadi",
+    "type": "landmark",
+    "language": "ta-IN",
+    "prompt": "வெண்ணெய் மற்றும் சட்னியுடன் பரிமாறப்படும் அகலமான காலை உணவுக்குப் பெயர் பெற்ற ஊரின் அருகே இருக்கிறோம். அது எந்த உணவு?",
+    "clues": [
+      "கன்னடத்தில் இதற்கு தட்டு இட்லி என்று பொருள்.",
+      "இதன் பெயர் தட்டே என்று தொடங்கும்."
+    ],
+    "answers": ["thatte idli", "idli", "தட்டே இட்லி", "தட்டு இட்லி", "இட்லி"],
+    "display_answer": "தட்டே இட்லி (Thatte Idli)",
+    "fun_fact": "பிடதியின் தட்டே இட்லி சிறிய குழிகளுக்குப் பதிலாக அகலமான தட்டுகளில் ஆவியில் வேகவைக்கப்படுகிறது."
+  },
+  {
+    "id": "q_lm_ramanagara_en",
+    "group_id": "q_lm_ramanagara",
+    "type": "landmark",
+    "language": "en-IN",
+    "prompt": "We are near rocky granite hills that stood in for the fictional village of Ramgarh in a 1975 Hindi blockbuster. Which film?",
+    "clues": [
+      "Its legendary villain asked how many men there were.",
+      "Jai and Veeru were its two heroes."
+    ],
+    "answers": ["sholay", "shole", "शोले"],
+    "display_answer": "Sholay",
+    "fun_fact": "The entire Ramgarh village set for Sholay was built in the granite hills of Ramadevara Betta near Ramanagara."
+  },
+  {
+    "id": "q_lm_ramanagara_hi",
+    "group_id": "q_lm_ramanagara",
+    "type": "landmark",
+    "language": "hi-IN",
+    "prompt": "हम उन पथरीली पहाड़ियों के पास हैं जहाँ 1975 की एक मशहूर फिल्म का रामगढ़ गाँव बसाया गया था। वह कौन-सी फिल्म थी?",
+    "clues": [
+      "इसके मशहूर खलनायक गब्बर सिंह थे।",
+      "जय और वीरू इस फिल्म की जोड़ी थी।"
+    ],
+    "answers": ["sholay", "shole", "शोले"],
+    "display_answer": "शोले",
+    "fun_fact": "फिल्म शोले का पूरा रामगढ़ सेट रामनगरा के पास रामदेवरा बेट्टा की चट्टानों में बनाया गया था।"
+  },
+  {
+    "id": "q_lm_ramanagara_ta",
+    "group_id": "q_lm_ramanagara",
+    "type": "landmark",
+    "language": "ta-IN",
+    "prompt": "1975-ஆம் ஆண்டின் புகழ்பெற்ற இந்தித் திரைப்படத்தின் ராம்கர் கிராமம் அமைக்கப்பட்ட பாறை மலைகளின் அருகே உள்ளோம். அது எந்தப் படம்?",
+    "clues": [
+      "கப்பர் சிங் இதன் புகழ்பெற்ற வில்லன்.",
+      "ஜெய் மற்றும் வீரு இதன் நாயகர்கள்."
+    ],
+    "answers": ["sholay", "shole", "ஷோலே", "சோலே"],
+    "display_answer": "ஷோலே (Sholay)",
+    "fun_fact": "ஷோலே படத்தின் ராம்கர் கிராமம் முழுவதும் ராமநகரா அருகே உள்ள ராமதேவரா பெட்டா பாறைகளில் உருவாக்கப்பட்டது."
+  },
+  {
+    "id": "q_lm_channapatna_en",
+    "group_id": "q_lm_channapatna",
+    "type": "landmark",
+    "language": "en-IN",
+    "prompt": "We are near Karnataka's Toy Town, celebrated for a two-hundred-year-old GI-tagged craft. What are these colourful items made of?",
+    "clues": [
+      "They are coated with natural vegetable dyes and safe lac.",
+      "Artisans carve them from ivory-wood on a lathe."
+    ],
+    "answers": ["wood", "wooden", "ivory wood", "timber", "लकड़ी", "மரம்"],
+    "display_answer": "Wood",
+    "fun_fact": "Channapatna wooden toys use non-toxic vegetable colours and have been crafted since Tipu Sultan invited Persian artisans."
+  },
+  {
+    "id": "q_lm_channapatna_hi",
+    "group_id": "q_lm_channapatna",
+    "type": "landmark",
+    "language": "hi-IN",
+    "prompt": "हम कर्नाटक के टॉय टाउन चन्नापटना के पास हैं, जो रंग-बिरंगे खिलौनों के लिए प्रसिद्ध है। ये खिलौने किस चीज़ से बनते हैं?",
+    "clues": [
+      "इन पर प्राकृतिक वनस्पति रंग और लाख की चमक चढ़ाई जाती है।",
+      "कारीगर इन्हें खराद पर तराशते हैं।"
+    ],
+    "answers": ["wood", "wooden", "lakdi", "लकड़ी", "लकडी"],
+    "display_answer": "लकड़ी",
+    "fun_fact": "चन्नापटना के लकड़ी के खिलौनों को जीआई टैग मिला है और इनमें बच्चों के लिए सुरक्षित प्राकृतिक रंग इस्तेमाल होते हैं।"
+  },
+  {
+    "id": "q_lm_channapatna_ta",
+    "group_id": "q_lm_channapatna",
+    "type": "landmark",
+    "language": "ta-IN",
+    "prompt": "வண்ணமயமான பொம்மைகளுக்குப் பெயர் பெற்ற சன்னபட்னா அருகே இருக்கிறோம். இந்தப் பொம்மைகள் எதனால் செய்யப்படுகின்றன?",
+    "clues": [
+      "இவற்றிற்கு இயற்கை தாவர சாயங்களும் அரக்கும் பூசப்படுகின்றன.",
+      "கைவினைஞர்கள் இவற்றை கடைந்து உருவாக்குகிறார்கள்."
+    ],
+    "answers": ["wood", "wooden", "maram", "மரம்", "மரத்தால்"],
+    "display_answer": "மரம் (Wood)",
+    "fun_fact": "சன்னபட்னா மரப் பொம்மைகளுக்கு புவிசார் குறியீடு உள்ளது மற்றும் இயற்கை வண்ணங்களால் மட்டுமே இவை செய்யப்படுகின்றன."
+  },
+  {
+    "id": "q_lm_srirangapatna_en",
+    "group_id": "q_lm_srirangapatna",
+    "type": "landmark",
+    "language": "en-IN",
+    "prompt": "We are near the historic river island town of Srirangapatna, once Tipu Sultan's capital. Which major South Indian river forms this island?",
+    "clues": [
+      "It rises at Talakaveri in Kodagu.",
+      "It flows through Karnataka and Tamil Nadu into the Bay of Bengal."
+    ],
+    "answers": ["kaveri", "cauvery", "कावेरी", "காவிரி"],
+    "display_answer": "Kaveri",
+    "fun_fact": "Srirangapatna is one of three sacred river islands formed by the Kaveri, alongside Shivanasamudra and Srirangam."
+  },
+  {
+    "id": "q_lm_srirangapatna_hi",
+    "group_id": "q_lm_srirangapatna",
+    "type": "landmark",
+    "language": "hi-IN",
+    "prompt": "हम ऐतिहासिक नदी द्वीप श्रीरंगपटना के पास हैं, जो कभी टीपू सुल्तान की राजधानी था। यह द्वीप किस बड़ी नदी से बना है?",
+    "clues": [
+      "इसका उद्गम कोडागु के तलकावेरी से होता है।",
+      "यह कर्नाटक और तमिलनाडु से बहती हुई बंगाल की खाड़ी में मिलती है।"
+    ],
+    "answers": ["kaveri", "cauvery", "कावेरी"],
+    "display_answer": "कावेरी",
+    "fun_fact": "कावेरी नदी अपने रास्ते में तीन बड़े पवित्र द्वीप बनाती है, जिनमें श्रीरंगपटना पहला है।"
+  },
+  {
+    "id": "q_lm_srirangapatna_ta",
+    "group_id": "q_lm_srirangapatna",
+    "type": "landmark",
+    "language": "ta-IN",
+    "prompt": "திப்பு சுல்தானின் தலைநகராக இருந்த ஸ்ரீரங்கப்பட்டினம் ஆற்றுத் தீவின் அருகே உள்ளோம். இந்தத் தீவை உருவாக்கும் நதி எது?",
+    "clues": [
+      "இது குடகில் உள்ள தலைக்காவிரியில் உற்பத்தியாகிறது.",
+      "கர்நாடகா மற்றும் தமிழ்நாடு வழியாக வங்காள விரிகுடாவில் கலக்கிறது."
+    ],
+    "answers": ["kaveri", "cauvery", "காவிரி", "காவேரி"],
+    "display_answer": "காவிரி",
+    "fun_fact": "ஸ்ரீரங்கப்பட்டினம், சிவசமுத்திரம் மற்றும் திருவரங்கம் ஆகிய மூன்றும் காவிரி உருவாக்கும் புகழ்பெற்ற தீவுகளாகும்."
+  },
+  {
+    "id": "q_lm_mysuru_palace_en",
+    "group_id": "q_lm_mysuru_palace",
+    "type": "landmark",
+    "language": "en-IN",
+    "prompt": "We are near a royal palace famous for illuminating nearly one hundred thousand bulbs during a grand ten-day autumn festival. Which festival?",
+    "clues": [
+      "It celebrates the victory of Chamundeshwari over Mahishasura.",
+      "Its grand procession is called Jamboo Savari."
+    ],
+    "answers": ["dasara", "dussehra", "mysuru dasara", "दशहरा", "தசரா"],
+    "display_answer": "Dasara",
+    "fun_fact": "Mysuru Dasara has been celebrated with royal processions for over four hundred years since 1610."
+  },
+  {
+    "id": "q_lm_mysuru_palace_hi",
+    "group_id": "q_lm_mysuru_palace",
+    "type": "landmark",
+    "language": "hi-IN",
+    "prompt": "हम उस भव्य राजमहल के पास हैं जो दस दिनों के एक बड़े उत्सव में लगभग एक लाख बल्बों से जगमगा उठता है। यह कौन-सा त्योहार है?",
+    "clues": [
+      "यह देवी चामुंडेश्वरी की महिषासुर पर विजय का प्रतीक है।",
+      "इसके शाही जुलूस को जंबू सवारी कहा जाता है।"
+    ],
+    "answers": ["dasara", "dussehra", "दशहरा", "दसरा"],
+    "display_answer": "दशहरा",
+    "fun_fact": "मैसूरु का दशहरा 1610 से चार सौ से अधिक वर्षों से शाही परंपरा के साथ मनाया जा रहा है।"
+  },
+  {
+    "id": "q_lm_mysuru_palace_ta",
+    "group_id": "q_lm_mysuru_palace",
+    "type": "landmark",
+    "language": "ta-IN",
+    "prompt": "பத்து நாள் திருவிழாவில் சுமார் ஒரு லட்சம் மின்விளக்குகளால் ஒளிரும் புகழ்பெற்ற அரண்மனையின் அருகே இருக்கிறோம். அது எந்தத் திருவிழா?",
+    "clues": [
+      "சாமுண்டீஸ்வரி தேவியின் வெற்றியை இது கொண்டாடுகிறது.",
+      "இதன் ஊர்வலம் ஜம்பு சவாரி என அழைக்கப்படுகிறது."
+    ],
+    "answers": ["dasara", "dussehra", "தசரா", "நவராத்திரி"],
+    "display_answer": "தசரா",
+    "fun_fact": "மைசூரு தசரா திருவிழா 1610-ஆம் ஆண்டு முதல் நானூறு ஆண்டுகளுக்கும் மேலாக கொண்டாடப்படுகிறது."
+  },
+  {
+    "id": "q_reg_mandya_en",
+    "group_id": "q_reg_mandya",
+    "type": "region",
+    "language": "en-IN",
+    "prompt": "Mandya is known across Karnataka as the Sugar Bowl. Which tall crop gives this district its sweet nickname?",
+    "clues": [],
+    "answers": ["sugarcane", "sugar cane", "cane", "गन्ना", "கரும்பு"],
+    "display_answer": "Sugarcane",
+    "fun_fact": "Water from the Krishna Raja Sagara dam turned Mandya into one of South India's most fertile sugarcane regions."
+  },
+  {
+    "id": "q_reg_mandya_hi",
+    "group_id": "q_reg_mandya",
+    "type": "region",
+    "language": "hi-IN",
+    "prompt": "मंड्या को कर्नाटक का शुगर बाउल कहा जाता है। किस लंबी फसल की वजह से इसे यह मीठा नाम मिला?",
+    "clues": [],
+    "answers": ["sugarcane", "sugar cane", "ganna", "गन्ना", "ईख"],
+    "display_answer": "गन्ना",
+    "fun_fact": "कृष्ण राजा सागर बाँध के पानी ने मंड्या को दक्षिण भारत के सबसे उपजाऊ गन्ना क्षेत्रों में बदल दिया।"
+  },
+  {
+    "id": "q_reg_mandya_ta",
+    "group_id": "q_reg_mandya",
+    "type": "region",
+    "language": "ta-IN",
+    "prompt": "மாண்டியா கர்நாடகாவின் சர்க்கரைக் கிண்ணம் என்று அழைக்கப்படுகிறது. எந்தப் பயிரால் இந்தப் பெயர் வந்தது?",
+    "clues": [],
+    "answers": ["sugarcane", "sugar cane", "karumbu", "கரும்பு"],
+    "display_answer": "கரும்பு (Sugarcane)",
+    "fun_fact": "கிருஷ்ணராஜ சாகர் அணையின் நீர்ப்பாசனத்தால் மாண்டியா தென்னிந்தியாவின் முக்கிய கரும்புப் பகுதியாக மாறியது."
+  },
+  {
+    "id": "q_reg_mysuru_en",
+    "group_id": "q_reg_mysuru",
+    "type": "region",
+    "language": "en-IN",
+    "prompt": "Which rich, melt-in-the-mouth sweet made with gram flour, sugar, and generous ghee was invented right here in Mysuru's royal kitchen?",
+    "clues": [],
+    "answers": ["mysore pak", "mysuru pak", "mysorepak", "मैसूर पाक", "மைசூர் பாக்"],
+    "display_answer": "Mysore Pak",
+    "fun_fact": "Royal chef Kakasura Madappa created Mysore Pak in the early 1930s for Maharaja Krishna Raja Wadiyar the Fourth."
+  },
+  {
+    "id": "q_reg_mysuru_hi",
+    "group_id": "q_reg_mysuru",
+    "type": "region",
+    "language": "hi-IN",
+    "prompt": "बेसन, चीनी और भरपूर घी से बनने वाली कौन-सी मशहूर मिठाई मैसूरु के शाही रसोईघर में बनाई गई थी?",
+    "clues": [],
+    "answers": ["mysore pak", "mysuru pak", "मैसूर पाक", "मैसूरु पाक"],
+    "display_answer": "मैसूर पाक",
+    "fun_fact": "शाही रसोइये काकासुर मडप्पा ने 1930 के दशक में महाराजा कृष्ण राजा वाडियार के लिए मैसूर पाक बनाया था।"
+  },
+  {
+    "id": "q_reg_mysuru_ta",
+    "group_id": "q_reg_mysuru",
+    "type": "region",
+    "language": "ta-IN",
+    "prompt": "கடலை மாவு, சர்க்கரை மற்றும் நெய் கொண்டு செய்யப்படும் எந்தப் புகழ்பெற்ற இனிப்பு மைசூரு அரண்மனை சமையலறையில் உருவானது?",
+    "clues": [],
+    "answers": ["mysore pak", "mysuru pak", "மைசூர் பாக்", "மைசூர்பாக்"],
+    "display_answer": "மைசூர் பாக்",
+    "fun_fact": "அரண்மனை சமையல்காரர் காகாசுர மடப்பா 1930-களில் மன்னருக்காக மைசூர் பாக்கை உருவாக்கினார்."
+  },
+
+  {
+    "id": "q_tr_en_01",
+    "type": "trivia",
+    "language": "en-IN",
+    "prompt": "Who captained India to its first Cricket World Cup title in 1983?",
+    "clues": [],
+    "answers": ["kapil dev", "kapil"],
+    "display_answer": "Kapil Dev",
+    "fun_fact": "Kapil Dev also scored an unbeaten 175 against Zimbabwe during that tournament, then a World Cup record."
+  },
+  {
+    "id": "q_tr_en_02",
+    "type": "trivia",
+    "language": "en-IN",
+    "prompt": "Which Indian music composer won two Academy Awards for Slumdog Millionaire?",
+    "clues": [],
+    "answers": ["a r rahman", "ar rahman", "rahman", "allah rakha rahman"],
+    "display_answer": "A. R. Rahman",
+    "fun_fact": "A. R. Rahman won both Best Original Score and Best Original Song for Jai Ho in 2009."
+  },
+  {
+    "id": "q_tr_en_03",
+    "type": "trivia",
+    "language": "en-IN",
+    "prompt": "Which Indian city is nicknamed the Pink City for its terracotta-painted old town?",
+    "clues": [],
+    "answers": ["jaipur"],
+    "display_answer": "Jaipur",
+    "fun_fact": "Jaipur was painted terracotta pink in 1876 as a symbol of hospitality."
+  },
+  {
+    "id": "q_tr_en_04",
+    "type": "trivia",
+    "language": "en-IN",
+    "prompt": "What was the name of the rover carried by India's Chandrayaan-3 mission to the Moon?",
+    "clues": [],
+    "answers": ["pragyan", "pragyaan"],
+    "display_answer": "Pragyan",
+    "fun_fact": "Pragyan means wisdom in Sanskrit, and it rolled out from the Vikram lander near the lunar south pole in August 2023."
+  },
+  {
+    "id": "q_tr_en_05",
+    "type": "trivia",
+    "language": "en-IN",
+    "prompt": "Which beloved South Indian breakfast is a crisp fermented rice and lentil crepe?",
+    "clues": [],
+    "answers": ["dosa", "dosai", "masala dosa"],
+    "display_answer": "Dosa",
+    "fun_fact": "References to dosa appear in Tamil Sangam literature dating back nearly two thousand years."
+  },
+  {
+    "id": "q_tr_en_06",
+    "type": "trivia",
+    "language": "en-IN",
+    "prompt": "Who was the first Indian woman to win an Olympic silver medal in badminton?",
+    "clues": [],
+    "answers": ["p v sindhu", "pv sindhu", "sindhu", "pusarla venkata sindhu"],
+    "display_answer": "P. V. Sindhu",
+    "fun_fact": "P. V. Sindhu won silver in Rio 2016 and followed it with bronze in Tokyo 2020."
+  },
+  {
+    "id": "q_tr_en_07",
+    "type": "trivia",
+    "language": "en-IN",
+    "prompt": "Which classic board game known worldwide as Snakes and Ladders originated in ancient India as Moksha Patam?",
+    "clues": [],
+    "answers": ["snakes and ladders", "saanp seedhi", "moksha patam"],
+    "display_answer": "Snakes and Ladders",
+    "fun_fact": "In the original Indian game, ladders stood for virtues and snakes stood for vices."
+  },
+  {
+    "id": "q_tr_en_08",
+    "type": "trivia",
+    "language": "en-IN",
+    "prompt": "Which iconic Indian playback singer was affectionately known as the Nightingale of India?",
+    "clues": [],
+    "answers": ["lata mangeshkar", "lata"],
+    "display_answer": "Lata Mangeshkar",
+    "fun_fact": "Lata Mangeshkar recorded songs in over thirty-six Indian and foreign languages during her seven-decade career."
+  },
+
+  {
+    "id": "q_tr_hi_01",
+    "type": "trivia",
+    "language": "hi-IN",
+    "prompt": "1983 का क्रिकेट विश्व कप जीतने वाली भारतीय टीम के कप्तान कौन थे?",
+    "clues": [],
+    "answers": ["कपिल देव", "कपिल", "kapil dev", "kapil"],
+    "display_answer": "कपिल देव",
+    "fun_fact": "उसी विश्व कप में कपिल देव ने ज़िम्बाब्वे के खिलाफ़ नाबाद 175 रन की ऐतिहासिक पारी खेली थी।"
+  },
+  {
+    "id": "q_tr_hi_02",
+    "type": "trivia",
+    "language": "hi-IN",
+    "prompt": "भारत के किस शहर को गुलाबी नगरी यानी पिंक सिटी कहा जाता है?",
+    "clues": [],
+    "answers": ["जयपुर", "jaipur"],
+    "display_answer": "जयपुर",
+    "fun_fact": "1876 में मेहमाननवाज़ी के प्रतीक के रूप में जयपुर के पुराने शहर को गुलाबी रंग से रंगा गया था।"
+  },
+  {
+    "id": "q_tr_hi_03",
+    "type": "trivia",
+    "language": "hi-IN",
+    "prompt": "चंद्रयान-3 मिशन में चाँद की सतह पर उतरने वाले रोवर का नाम क्या था?",
+    "clues": [],
+    "answers": ["प्रज्ञान", "pragyan", "pragyaan"],
+    "display_answer": "प्रज्ञान",
+    "fun_fact": "संस्कृत में प्रज्ञान का अर्थ ज्ञान होता है और यह विक्रम लैंडर से बाहर निकलकर चाँद पर चला था।"
+  },
+  {
+    "id": "q_tr_hi_04",
+    "type": "trivia",
+    "language": "hi-IN",
+    "prompt": "फिल्म स्लमडॉग मिलियनेयर के लिए दो ऑस्कर पुरस्कार जीतने वाले भारतीय संगीतकार कौन हैं?",
+    "clues": [],
+    "answers": ["ए आर रहमान", "रहमान", "ar rahman", "a r rahman", "rahman"],
+    "display_answer": "ए. आर. रहमान",
+    "fun_fact": "ए. आर. रहमान को 2009 में सर्वश्रेष्ठ संगीत और 'जय हो' गीत के लिए दो ऑस्कर मिले थे।"
+  },
+  {
+    "id": "q_tr_hi_05",
+    "type": "trivia",
+    "language": "hi-IN",
+    "prompt": "भारत की पहली मूक फीचर फिल्म 'राजा हरिश्चंद्र' किसने बनाई थी?",
+    "clues": [],
+    "answers": ["दादासाहेब फाल्के", "फाल्के", "dadasaheb phalke", "phalke"],
+    "display_answer": "दादासाहेब फाल्के",
+    "fun_fact": "1913 में आई राजा हरिश्चंद्र के बाद दादासाहेब फाल्के को भारतीय सिनेमा का जनक कहा जाता है।"
+  },
+  {
+    "id": "q_tr_hi_06",
+    "type": "trivia",
+    "language": "hi-IN",
+    "prompt": "मसालों का बगीचा भारत के किस राज्य को कहा जाता है?",
+    "clues": [],
+    "answers": ["केरल", "केरला", "kerala"],
+    "display_answer": "केरल",
+    "fun_fact": "काली मिर्च, इलायची और दालचीनी के सदियों पुराने व्यापार के कारण केरल को मसालों का बगीचा कहा जाता है।"
+  },
+  {
+    "id": "q_tr_hi_07",
+    "type": "trivia",
+    "language": "hi-IN",
+    "prompt": "हॉकी के जादूगर के नाम से भारत के किस महान खिलाड़ी को जाना जाता है?",
+    "clues": [],
+    "answers": ["मेजर ध्यानचंद", "ध्यानचंद", "ध्यान चंद", "dhyan chand", "major dhyan chand"],
+    "display_answer": "मेजर ध्यानचंद",
+    "fun_fact": "मेजर ध्यानचंद के जन्मदिन 29 अगस्त को हर साल राष्ट्रीय खेल दिवस के रूप में मनाया जाता है।"
+  },
+  {
+    "id": "q_tr_hi_08",
+    "type": "trivia",
+    "language": "hi-IN",
+    "prompt": "किस भारतीय पार्श्व गायिका को प्यार से स्वर कोकिला कहा जाता था?",
+    "clues": [],
+    "answers": ["लता मंगेशकर", "लता", "lata mangeshkar", "lata"],
+    "display_answer": "लता मंगेशकर",
+    "fun_fact": "लता मंगेशकर ने अपने सात दशकों के सफर में छत्तीस से अधिक भाषाओं में गीत गाए।"
+  },
+
+  {
+    "id": "q_tr_ta_01",
+    "type": "trivia",
+    "language": "ta-IN",
+    "prompt": "1983 கிரிக்கெட் உலகக் கோப்பையை வென்ற இந்திய அணியின் கேப்டன் யார்?",
+    "clues": [],
+    "answers": ["கபில் தேவ்", "கபில்", "kapil dev", "kapil"],
+    "display_answer": "கபில் தேவ்",
+    "fun_fact": "அந்தத் தொடரில் ஜிம்பாப்வேக்கு எதிராக கபில் தேவ் ஆட்டமிழக்காமல் 175 ரன்கள் எடுத்து சாதனை படைத்தார்."
+  },
+  {
+    "id": "q_tr_ta_02",
+    "type": "trivia",
+    "language": "ta-IN",
+    "prompt": "இசைப் புயல் என்று அழைக்கப்படும் இரட்டை ஆஸ்கர் விருது வென்ற இசையமைப்பாளர் யார்?",
+    "clues": [],
+    "answers": ["ஏ ஆர் ரஹ்மான்", "ரஹ்மான்", "ரகுமான்", "a r rahman", "ar rahman", "rahman"],
+    "display_answer": "ஏ. ஆர். ரஹ்மான்",
+    "fun_fact": "2009-ஆம் ஆண்டு ஸ்லம்டாக் மில்லியனர் படத்திற்காக ரஹ்மான் இரண்டு ஆஸ்கர் விருதுகளை வென்றார்."
+  },
+  {
+    "id": "q_tr_ta_03",
+    "type": "trivia",
+    "language": "ta-IN",
+    "prompt": "சந்திரயான்-3 திட்டத்தில் நிலவின் மேற்பரப்பில் பயணித்த ரோவரின் பெயர் என்ன?",
+    "clues": [],
+    "answers": ["பிரக்யான்", "ப்ரக்யான்", "pragyan", "pragyaan"],
+    "display_answer": "பிரக்யான்",
+    "fun_fact": "விக்ரம் லேண்டரில் இருந்து வெளியேறி நிலவின் தென் துருவப் பகுதியில் பிரக்யான் ஆய்வு செய்தது."
+  },
+  {
+    "id": "q_tr_ta_04",
+    "type": "trivia",
+    "language": "ta-IN",
+    "prompt": "ஆவியில் வேகவைக்கப்படும் எந்த மென்மையான அரிசி உணவு தென்னிந்தியாவின் புகழ்பெற்ற காலை உணவாகும்?",
+    "clues": [],
+    "answers": ["இட்லி", "idli", "idly"],
+    "display_answer": "இட்லி",
+    "fun_fact": "அரிசி மற்றும் உளுந்து புளிக்க வைத்து செய்யப்படும் இட்லி எளிதில் செரிமானமாகும் சத்தான உணவாகும்."
+  },
+  {
+    "id": "q_tr_ta_05",
+    "type": "trivia",
+    "language": "ta-IN",
+    "prompt": "உலகப் புகழ்பெற்ற திருக்குறளை இயற்றிய தமிழ்ப் புலவர் யார்?",
+    "clues": [],
+    "answers": ["திருவள்ளுவர்", "வள்ளுவர்", "thiruvalluvar", "valluvar"],
+    "display_answer": "திருவள்ளுவர்",
+    "fun_fact": "திருவள்ளுவர் இயற்றிய திருக்குறள் 1330 குறட்பாக்களைக் கொண்ட உலகப் பொதுமறையாகும்."
+  },
+  {
+    "id": "q_tr_ta_06",
+    "type": "trivia",
+    "language": "ta-IN",
+    "prompt": "இந்தியாவின் இளஞ்சிவப்பு நகரம் அதாவது பிங்க் சிட்டி என்று அழைக்கப்படும் நகரம் எது?",
+    "clues": [],
+    "answers": ["ஜெய்ப்பூர்", "ஜெய்பூர்", "jaipur"],
+    "display_answer": "ஜெய்ப்பூர்",
+    "fun_fact": "விருந்தோம்பலின் அடையாளமாக 1876-ஆம் ஆண்டு ஜெய்ப்பூர் நகருக்கு இளஞ்சிவப்பு வண்ணம் பூசப்பட்டது."
+  },
+  {
+    "id": "q_tr_ta_07",
+    "type": "trivia",
+    "language": "ta-IN",
+    "prompt": "ஐந்து முறை உலக செஸ் சாம்பியன் பட்டம் வென்ற தமிழ்நாட்டு வீரர் யார்?",
+    "clues": [],
+    "answers": ["விஸ்வநாதன் ஆனந்த்", "ஆனந்த்", "viswanathan anand", "anand"],
+    "display_answer": "விஸ்வநாதன் ஆனந்த்",
+    "fun_fact": "விஸ்வநாதன் ஆனந்த் 1988-இல் இந்தியாவின் முதல் கிராண்ட்மாஸ்டர் என்ற பெருமையைப் பெற்றார்."
+  },
+  {
+    "id": "q_tr_ta_08",
+    "type": "trivia",
+    "language": "ta-IN",
+    "prompt": "தஞ்சாவூர் பெரிய கோவிலைக் கட்டிய சோழ மன்னர் யார்?",
+    "clues": [],
+    "answers": ["ராஜராஜ சோழன்", "இராஜராஜ சோழன்", "ராஜராஜன்", "raja raja chola", "rajaraja chola"],
+    "display_answer": "ராஜராஜ சோழன்",
+    "fun_fact": "ஆயிரம் ஆண்டுகளுக்கு முன்பு கட்டப்பட்ட தஞ்சை பெரிய கோவில் யுனெஸ்கோ பாரம்பரிய சின்னமாகும்."
+  }
+]

@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Noto Sans Devanagari", "Noto Sans Tamil", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    background-color: #0B0E14;
+    color: #F3F5F8;
+    font-family: var(--font-sans);
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Optical compensation & crisp rendering for Devanagari & Tamil scripts */
+  [lang="hi-IN"] {
+    font-family: "Noto Sans Devanagari", "Plus Jakarta Sans", sans-serif;
+    line-height: 1.55;
+  }
+
+  [lang="ta-IN"] {
+    font-family: "Noto Sans Tamil", "Plus Jakarta Sans", sans-serif;
+    line-height: 1.6;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom subtle scrollbars for summary / demo drawer */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
