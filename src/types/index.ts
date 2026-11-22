@@ -98,6 +98,7 @@ export type AgentIntent = 'trip_question' | 'start_quiz' | 'other';
 export interface AgentTurnResponse {
   intent: AgentIntent;
   reply: string;
+  question?: Question;
   provider?: 'gemini' | 'anthropic';
   latencyMs?: number;
 }

@@ -9,6 +9,7 @@ import {
   type SupportedLang,
 } from './server/placesAlongRoute.ts';
 import {
+  createSingleQuiz,
   generateRouteQuizzes,
   getAgentProvider,
   handleAgentTurn,
@@ -927,7 +928,7 @@ app.post('/api/agent/turn', async (req, res) => {
     }
 
     const result = await Promise.race([
-      handleAgentTurn({ language, utterance, trip }),
+      handleAgentTurn({ dataDir: DATA_DIR, language, utterance, trip }),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Agent turn timed out')), 7800)
       ),
@@ -937,6 +938,70 @@ app.post('/api/agent/turn', async (req, res) => {
   } catch (err) {
     console.error('Agent turn error:', err instanceof Error ? err.message : 'unknown');
     res.status(502).json({ error: 'Voice agent could not answer right now.' });
+  }
+});
+
+// POST /api/agent/quiz/create — On-demand single quiz creation for the active drive or topic
+app.post('/api/agent/quiz/create', async (req, res) => {
+  try {
+    const body = req.body as {
+      language?: unknown;
+      topic?: unknown;
+      trip?: unknown;
+    };
+
+    const rawLang = typeof body.language === 'string' ? body.language : 'en-IN';
+    if (!ALLOWED_LANGUAGES.has(rawLang)) {
+      res.status(400).json({ error: 'Unsupported language.' });
+      return;
+    }
+    const language = rawLang as SupportedLang;
+    const topic = typeof body.topic === 'string' ? body.topic.trim().slice(0, 120) : undefined;
+
+    if (getAgentProvider() === 'none') {
+      res.status(503).json({ error: 'Voice AI Agent is not configured on the server.' });
+      return;
+    }
+
+    let trip: TripSnapshot | null = null;
+    if (body.trip && typeof body.trip === 'object') {
+      const t = body.trip as Record<string, unknown>;
+      const locObj =
+        t.current_location && typeof t.current_location === 'object'
+          ? (t.current_location as Record<string, unknown>)
+          : null;
+      trip = {
+        destination: typeof t.destination === 'string' ? t.destination.slice(0, 120) : null,
+        current_location:
+          locObj && typeof locObj.name === 'string'
+            ? { name: locObj.name.slice(0, 120) }
+            : null,
+        remaining_m:
+          typeof t.remaining_m === 'number' && Number.isFinite(t.remaining_m)
+            ? Math.max(0, Math.round(t.remaining_m))
+            : null,
+        remaining_s:
+          typeof t.remaining_s === 'number' && Number.isFinite(t.remaining_s)
+            ? Math.max(0, Math.round(t.remaining_s))
+            : null,
+        arrival_time: typeof t.arrival_time === 'string' ? t.arrival_time.slice(0, 20) : null,
+        next_maneuver: null,
+        region: typeof t.region === 'string' ? t.region.slice(0, 120) : null,
+        next_landmark: null,
+      };
+    }
+
+    const result = await Promise.race([
+      createSingleQuiz({ dataDir: DATA_DIR, language, topic, trip }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Quiz creation timed out')), 7800)
+      ),
+    ]);
+
+    res.json(result);
+  } catch (err) {
+    console.error('On-demand quiz create error:', err instanceof Error ? err.message : 'unknown');
+    res.status(502).json({ error: 'Unable to create a quiz right now.' });
   }
 });
 

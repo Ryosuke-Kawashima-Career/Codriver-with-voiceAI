@@ -39,6 +39,7 @@ export type AgentIntent = 'trip_question' | 'start_quiz' | 'other';
 export interface AgentTurnResult {
   intent: AgentIntent;
   reply: string;
+  question?: GeneratedQuestion;
   provider: 'gemini' | 'anthropic';
   latencyMs: number;
 }
@@ -249,30 +250,165 @@ async function callAnthropicJson<T>(
   }
 }
 
+interface RawGeneratedSingleQuiz {
+  prompt?: string;
+  clues?: string[];
+  answers?: string[];
+  display_answer?: string;
+  fun_fact?: string;
+  topic?: string;
+}
+
+function normalizeSingleQuiz(
+  raw: RawGeneratedSingleQuiz | undefined,
+  language: SupportedLang
+): { question: GeneratedQuestion; topic: string } | null {
+  if (!raw || !raw.prompt?.trim() || !raw.display_answer?.trim()) {
+    return null;
+  }
+  const displayAnswer = raw.display_answer.trim();
+  const answers = (raw.answers ?? []).map((a) => a.trim()).filter(Boolean);
+  if (answers.length === 0) {
+    answers.push(displayAnswer);
+  }
+  const qId = `q_agent_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  return {
+    topic: (raw.topic || 'On-Demand Quiz').trim().slice(0, 80),
+    question: {
+      id: qId,
+      group_id: qId,
+      type: 'trivia',
+      language,
+      prompt: raw.prompt.trim(),
+      clues: (raw.clues ?? []).map((c) => c.trim()).filter(Boolean).slice(0, 2),
+      answers,
+      display_answer: displayAnswer,
+      fun_fact: (raw.fun_fact || '').trim(),
+      source: 'generated',
+    },
+  };
+}
+
 /**
- * Spec 4.2: Answers live driver utterances (trip questions, start_quiz requests, or polite decline).
+ * Generates a single spoken quiz question on demand (used by POST /api/agent/quiz/create
+ * and as a guaranteed fallback whenever intent === "start_quiz").
+ */
+export async function createSingleQuiz(params: {
+  dataDir?: string;
+  language: SupportedLang;
+  topic?: string;
+  trip: TripSnapshot | null;
+}): Promise<{ question: GeneratedQuestion; provider: 'gemini' | 'anthropic'; latencyMs: number }> {
+  const startedAt = Date.now();
+  const { dataDir, language, topic, trip } = params;
+
+  const systemInstruction = [
+    `You create one fun, verifiable, spoken road-trip quiz question for Safar, an eyes-free in-car voice co-driver.`,
+    `Write prompt, display_answer, and fun_fact natively in ${LANG_LABEL[language]}.`,
+    `Provide 2 to 5 concise spoken answer variants in "answers" (include both native script and common English/phonetic spellings so speech recognition matches easily).`,
+    `Rules:`,
+    `1. If "topic" is provided, make the question about that topic. Otherwise, tailor it to the driver's current_location, region, destination, or next_landmark from "trip" if available, or pick a fun Indian/world road-trip trivia fact.`,
+    `2. Well-known verifiable facts ONLY. No politics or sensitive topics.`,
+    `3. NEVER ask the driver to look at, spot, read, or touch anything.`,
+    `4. Keep prompt and fun_fact short (1-2 spoken sentences).`,
+  ].join('\n');
+
+  const userContent = JSON.stringify({ language, topic: topic || null, trip }, null, 2);
+
+  let rawQuiz: RawGeneratedSingleQuiz;
+  let provider: 'gemini' | 'anthropic';
+
+  const gemini = getGeminiClient();
+  if (gemini) {
+    provider = 'gemini';
+    const preferred = process.env.AGENT_MODEL?.trim();
+    const models = preferred
+      ? [preferred, 'gemini-3.1-flash-lite', 'gemini-4-hydrogen'].filter(
+          (m, idx, arr) => arr.indexOf(m) === idx
+        )
+      : ['gemini-3.1-flash-lite', 'gemini-4-hydrogen'];
+
+    const rawText = await generateGeminiJsonWithFallback(gemini, {
+      models,
+      contents: userContent,
+      systemInstruction,
+      thinkingLevel: ThinkingLevel.LOW,
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          topic: { type: Type.STRING },
+          prompt: { type: Type.STRING },
+          clues: { type: Type.ARRAY, items: { type: Type.STRING } },
+          answers: { type: Type.ARRAY, items: { type: Type.STRING } },
+          display_answer: { type: Type.STRING },
+          fun_fact: { type: Type.STRING },
+        },
+        required: ['prompt', 'answers', 'display_answer', 'fun_fact'],
+      },
+    });
+    rawQuiz = JSON.parse(rawText) as RawGeneratedSingleQuiz;
+  } else {
+    provider = 'anthropic';
+    rawQuiz = await callAnthropicJson<RawGeneratedSingleQuiz>(
+      systemInstruction,
+      `${userContent}\n\nReturn JSON: { "topic": "...", "prompt": "...", "clues": [], "answers": ["..."], "display_answer": "...", "fun_fact": "..." }`,
+      7500
+    );
+  }
+
+  const normalized = normalizeSingleQuiz(rawQuiz, language);
+  if (!normalized) {
+    throw new Error('Model returned an incomplete quiz question');
+  }
+
+  if (dataDir) {
+    void appendGeneratedCache(dataDir, [
+      {
+        place_key: normalizePlaceKey(normalized.topic) || normalized.question.id,
+        place_name: normalized.topic,
+        kind: 'trivia',
+        language,
+        created_at: new Date().toISOString(),
+        question: normalized.question,
+      },
+    ]).catch(() => {
+      // Non-fatal cache write failure
+    });
+  }
+
+  return {
+    question: normalized.question,
+    provider,
+    latencyMs: Date.now() - startedAt,
+  };
+}
+
+/**
+ * Spec 4.2: Answers live driver utterances (trip questions, start_quiz requests with a freshly
+ * generated quiz question ready to play, or polite decline).
  */
 export async function handleAgentTurn(params: {
+  dataDir?: string;
   language: SupportedLang;
   utterance: string;
   trip: TripSnapshot | null;
 }): Promise<AgentTurnResult> {
   const startedAt = Date.now();
-  const { language, utterance, trip } = params;
+  const { dataDir, language, utterance, trip } = params;
 
   const systemInstruction = [
     `You are Safar, a calm, eyes-free Indian in-car voice co-driver.`,
     `Language: respond strictly in ${LANG_LABEL[language]}.`,
     `Classify the driver's utterance into one of three intents:`,
     `- "trip_question": asking about current location, distance remaining, ETA/arrival time, next turn/maneuver, current region/city, or next landmark/stop.`,
-    `- "start_quiz": asking to start a quiz, play a game, or hear a question now.`,
+    `- "start_quiz": asking to start a quiz, make/create a quiz, play a game, or ask a question (about any topic or the current trip/location).`,
     `- "other": anything else (e.g., weather, booking hotels, changing destination, calling someone, unrelated chatter).`,
     `Strict safety & accuracy rules for "reply":`,
     `1. At most 2 short spoken sentences suitable for text-to-speech.`,
     `2. Use ONLY the exact facts provided in the JSON trip snapshot. NEVER invent traffic, places, weather, or arrival times.`,
     `3. If trip is null (quiz-only mode) and the driver asks a route question, say briefly that no route is active right now (you may still mention current_location if present).`,
     `4. NEVER ask the driver to look at, read, tap, or touch the screen.`,
-    `5. For "start_quiz", give a brief 3-5 word enthusiastic lead-in in the chosen language.`,
+    `5. For "start_quiz": write a short 3-6 word enthusiastic lead-in in "reply" (do NOT include the quiz question text inside "reply"), AND populate the "quiz" object with ONE complete, verifiable spoken quiz question in ${LANG_LABEL[language]}. Tailor the quiz to any topic the driver asked for, or to their current_location/region/destination in "trip" if available, or engaging road-trip trivia. Provide 2-5 spoken answer variants in "quiz.answers" (native script + common English/phonetic spellings).`,
     `6. For "other", politely say in 1 short sentence that you can only help with trip details and road quizzes.`,
   ].join('\n');
 
@@ -286,8 +422,12 @@ export async function handleAgentTurn(params: {
     2
   );
 
+  let parsed: { intent?: AgentIntent; reply?: string; quiz?: RawGeneratedSingleQuiz };
+  let provider: 'gemini' | 'anthropic';
+
   const gemini = getGeminiClient();
   if (gemini) {
+    provider = 'gemini';
     const preferred = process.env.AGENT_MODEL?.trim();
     const models = preferred
       ? [preferred, 'gemini-3.1-flash-lite', 'gemini-4-hydrogen'].filter(
@@ -313,33 +453,42 @@ export async function handleAgentTurn(params: {
             description:
               'Short spoken reply (max 2 short sentences) in the requested language using only facts from trip.',
           },
+          quiz: {
+            type: Type.OBJECT,
+            description:
+              'Required when intent is "start_quiz". Contains one complete spoken quiz question.',
+            properties: {
+              topic: { type: Type.STRING },
+              prompt: { type: Type.STRING },
+              clues: { type: Type.ARRAY, items: { type: Type.STRING } },
+              answers: { type: Type.ARRAY, items: { type: Type.STRING } },
+              display_answer: { type: Type.STRING },
+              fun_fact: { type: Type.STRING },
+            },
+            required: ['prompt', 'answers', 'display_answer', 'fun_fact'],
+          },
         },
         required: ['intent', 'reply'],
       },
     });
 
-    const parsed = JSON.parse(rawText) as { intent?: AgentIntent; reply?: string };
-    const intent: AgentIntent =
-      parsed.intent === 'trip_question' ||
-      parsed.intent === 'start_quiz' ||
-      parsed.intent === 'other'
-        ? parsed.intent
-        : 'other';
-
-    return {
-      intent,
-      reply: (parsed.reply || '').trim(),
-      provider: 'gemini',
-      latencyMs: Date.now() - startedAt,
+    parsed = JSON.parse(rawText) as {
+      intent?: AgentIntent;
+      reply?: string;
+      quiz?: RawGeneratedSingleQuiz;
     };
+  } else {
+    provider = 'anthropic';
+    parsed = await callAnthropicJson<{
+      intent?: AgentIntent;
+      reply?: string;
+      quiz?: RawGeneratedSingleQuiz;
+    }>(
+      systemInstruction,
+      `${userContent}\n\nRespond with JSON: { "intent": "trip_question" | "start_quiz" | "other", "reply": "...", "quiz": { "topic": "...", "prompt": "...", "clues": [], "answers": ["..."], "display_answer": "...", "fun_fact": "..." } } (include "quiz" when intent is "start_quiz").`,
+      7500
+    );
   }
-
-  // Optional Anthropic fallback if GEMINI_API_KEY isn't set but ANTHROPIC_API_KEY is
-  const parsed = await callAnthropicJson<{ intent?: AgentIntent; reply?: string }>(
-    systemInstruction,
-    `${userContent}\n\nRespond with JSON: { "intent": "trip_question" | "start_quiz" | "other", "reply": "..." }`,
-    7500
-  );
 
   const intent: AgentIntent =
     parsed.intent === 'trip_question' ||
@@ -348,10 +497,47 @@ export async function handleAgentTurn(params: {
       ? parsed.intent
       : 'other';
 
+  let generatedQuestion: GeneratedQuestion | undefined;
+
+  if (intent === 'start_quiz') {
+    const normalized = normalizeSingleQuiz(parsed.quiz, language);
+    if (normalized) {
+      generatedQuestion = normalized.question;
+      if (dataDir) {
+        void appendGeneratedCache(dataDir, [
+          {
+            place_key: normalizePlaceKey(normalized.topic) || normalized.question.id,
+            place_name: normalized.topic,
+            kind: 'trivia',
+            language,
+            created_at: new Date().toISOString(),
+            question: normalized.question,
+          },
+        ]).catch(() => {
+          // Non-fatal cache write failure
+        });
+      }
+    } else {
+      // Guaranteed fallback: explicitly generate a single quiz question if the turn reply omitted it
+      try {
+        const created = await createSingleQuiz({
+          dataDir,
+          language,
+          topic: utterance,
+          trip,
+        });
+        generatedQuestion = created.question;
+      } catch {
+        // Frontend will fall back to local trivia pool
+      }
+    }
+  }
+
   return {
     intent,
     reply: (parsed.reply || '').trim(),
-    provider: 'anthropic',
+    ...(generatedQuestion ? { question: generatedQuestion } : {}),
+    provider,
     latencyMs: Date.now() - startedAt,
   };
 }

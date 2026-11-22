@@ -47,6 +47,7 @@ interface ActiveQuizContext {
   landmark?: Landmark;
   region?: Region;
   alreadyRepeatedAfterInterrupt?: boolean;
+  userInitiated?: boolean;
 }
 
 interface PendingRouteTrigger {
@@ -275,13 +276,13 @@ export function useCoDriver(onFinishToSummary: () => void): {
   const stopSessionRef = useRef<() => Promise<void>>(async () => {});
 
   const speakQuiz = useCallback(
-    async (text: string, token: number): Promise<boolean> => {
+    async (text: string, token: number, allowInDirectionsZone = false): Promise<boolean> => {
       const activeZone = isInDirectionsFirstZone(
         routeRef.current,
         progressMRef.current,
         DEFAULT_NAV_SETTINGS
       );
-      if (activeZone || isNavSpeakingRef.current) {
+      if ((!allowInDirectionsZone && activeZone) || isNavSpeakingRef.current) {
         pushLog({
           kind: 'speech',
           decision: 'held',
@@ -534,7 +535,9 @@ export function useCoDriver(onFinishToSummary: () => void): {
         progressMRef.current,
         DEFAULT_NAV_SETTINGS
       );
-      if (activeZone || isNavSpeakingRef.current) {
+      // Automatic/route-triggered quizzes wait outside directions-first zones,
+      // while explicitly user-requested quizzes may start unless a direction is actively speaking.
+      if ((!ctx.userInitiated && activeZone) || isNavSpeakingRef.current) {
         pushLog({
           kind: 'speech',
           decision: 'held',
@@ -578,7 +581,7 @@ export function useCoDriver(onFinishToSummary: () => void): {
           : ctx.question.clues[ctx.clueIndex - 1] ?? ctx.question.prompt;
 
       const spokenText = customLead ? `${customLead} ${promptText}` : promptText;
-      const ok = await speakQuiz(spokenText, token);
+      const ok = await speakQuiz(spokenText, token, Boolean(ctx.userInitiated));
       if (!ok || token !== quizTokenRef.current || isPausedRef.current) return;
 
       setPhaseSafe('LISTEN');
@@ -863,14 +866,34 @@ export function useCoDriver(onFinishToSummary: () => void): {
         });
 
         if (data.intent === 'start_quiz') {
+          let nextQ: Question | null = data.question
+            ? { ...data.question, source: 'generated' }
+            : null;
+
+          if (nextQ) {
+            allQuestionsRef.current = [...allQuestionsRef.current, nextQ];
+            pushLog({
+              kind: 'agent',
+              intent: 'start_quiz',
+              summary: 'Agent created live quiz question',
+              detail: nextQ.prompt,
+            });
+          } else {
+            nextQ = pickNextTrivia();
+          }
+
           if (data.reply) {
             setPhaseSafe('FEEDBACK');
             const ok = await speakAgentReply(data.reply, token);
             if (!ok || token !== quizTokenRef.current || isPausedRef.current) return;
           }
-          const nextQ = pickNextTrivia();
+
           if (nextQ) {
-            await runQuestionRoundRef.current({ question: nextQ, clueIndex: 0 });
+            await runQuestionRoundRef.current({
+              question: nextQ,
+              clueIndex: 0,
+              userInitiated: true,
+            });
           } else {
             setPhaseSafe('IDLE');
           }
@@ -919,7 +942,9 @@ export function useCoDriver(onFinishToSummary: () => void): {
 
       if (rawText) {
         const cmd = detectVoiceCommand(rawText);
-        if (cmd) {
+        // Only treat 'resume' as a voice command when the quiz is actually paused;
+        // otherwise let utterances like "start" or "start a quiz" reach the Voice AI Agent.
+        if (cmd && (cmd !== 'resume' || isPausedRef.current)) {
           pushLog({
             kind: 'transcript',
             summary: `Command detected: "${cmd}"`,
@@ -941,7 +966,11 @@ export function useCoDriver(onFinishToSummary: () => void): {
         if (intent === 'yes') {
           const nextQ = pickNextTrivia();
           if (nextQ) {
-            await runQuestionRoundRef.current({ question: nextQ, clueIndex: 0 });
+            await runQuestionRoundRef.current({
+              question: nextQ,
+              clueIndex: 0,
+              userInitiated: true,
+            });
           } else {
             setPhaseSafe('IDLE');
           }
@@ -1007,7 +1036,7 @@ export function useCoDriver(onFinishToSummary: () => void): {
           setPhaseSafe('FEEDBACK');
 
           const reply = scripts.correctReply(ctx.question.display_answer, ctx.question.fun_fact);
-          const finished = await speakQuiz(reply, token);
+          const finished = await speakQuiz(reply, token, Boolean(ctx.userInitiated));
           if (!finished || token !== quizTokenRef.current || isPausedRef.current) return;
 
           setPhaseSafe('IDLE');
@@ -1042,7 +1071,7 @@ export function useCoDriver(onFinishToSummary: () => void): {
           ? scripts.missReply(ctx.question.display_answer, ctx.question.fun_fact)
           : scripts.silenceReply(ctx.question.display_answer, ctx.question.fun_fact);
 
-        const finished = await speakQuiz(reply, token);
+        const finished = await speakQuiz(reply, token, Boolean(ctx.userInitiated));
         if (!finished || token !== quizTokenRef.current || isPausedRef.current) return;
 
         setPhaseSafe('IDLE');

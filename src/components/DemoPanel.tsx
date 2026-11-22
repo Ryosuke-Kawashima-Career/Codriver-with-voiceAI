@@ -82,6 +82,13 @@ export function DemoPanel({
         ? 'நான் இப்போது எங்கே இருக்கிறேன்?'
         : 'Where am I right now?';
 
+  const sampleStartQuiz =
+    language === 'hi-IN'
+      ? 'क्विज़ शुरू करो'
+      : language === 'ta-IN'
+        ? 'வினாடி வினா தொடங்கு'
+        : 'Start a quiz';
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!typedText.trim()) return;
@@ -256,6 +263,13 @@ export function DemoPanel({
               className="px-3 min-h-[36px] rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-xs font-medium text-sky-900 transition-colors cursor-pointer"
             >
               Ask: &ldquo;{sampleLocationQuestion}&rdquo;
+            </button>
+            <button
+              type="button"
+              onClick={() => onSubmitTyped(sampleStartQuiz)}
+              className="px-3 min-h-[36px] rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-xs font-medium text-emerald-900 transition-colors cursor-pointer"
+            >
+              Ask: &ldquo;{sampleStartQuiz}&rdquo;
             </button>
             <button
               type="button"

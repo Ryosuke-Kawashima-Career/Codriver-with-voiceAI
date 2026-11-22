@@ -115,5 +115,76 @@
       "fun_fact": "Vada Pav originated in Mumbai and has become an iconic, affordable comfort food enjoyed by people across all walks of life in India.",
       "source": "generated"
     }
+  },
+  {
+    "place_key": "shibuya_trivia",
+    "place_name": "Shibuya Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:49:23.762Z",
+    "question": {
+      "id": "q_agent_1795340963762_8kox",
+      "group_id": "q_agent_1795340963762_8kox",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Shibuya is famous for its scramble crossing, but which iconic dog statue is located right outside the station?",
+      "clues": [],
+      "answers": [
+        "Hachiko",
+        "Hachiko statue",
+        "The loyal dog Hachiko",
+        "Hachiko-san"
+      ],
+      "display_answer": "Hachiko",
+      "fun_fact": "The loyal dog Hachiko waited for his owner at Shibuya Station every day for nine years after his owner passed away.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "on_demand_quiz",
+    "place_name": "On-Demand Quiz",
+    "kind": "trivia",
+    "language": "hi-IN",
+    "created_at": "2026-11-22T09:49:25.603Z",
+    "question": {
+      "id": "q_agent_1795340965603_rclv",
+      "group_id": "q_agent_1795340965603_rclv",
+      "type": "trivia",
+      "language": "hi-IN",
+      "prompt": "कर्नाटक की सांस्कृतिक राजधानी और मशहूर मैसूर पैलेस किस शहर में स्थित है?",
+      "clues": [],
+      "answers": [
+        "मैसूर",
+        "मैसूरु",
+        "Mysore",
+        "Mysuru"
+      ],
+      "display_answer": "मैसूरु",
+      "fun_fact": "मैसूर पैलेस भारत के सबसे अधिक देखे जाने वाले पर्यटन स्थलों में से एक है और यह वाडियार राजवंश का आधिकारिक निवास था।",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "on_demand_quiz",
+    "place_name": "On-Demand Quiz",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:49:27.594Z",
+    "question": {
+      "id": "q_agent_1795340967594_z7c0",
+      "group_id": "q_agent_1795340967594_z7c0",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which popular Indian snack, known for its crispy exterior and spiced potato filling, is often simply called a 'samosa' but gets a different name in parts of West Bengal, like 'shingara'?",
+      "clues": [],
+      "answers": [
+        "Samosa",
+        "Shingara",
+        "Singara"
+      ],
+      "display_answer": "Samosa / Shingara",
+      "fun_fact": "While the samosa is iconic across India, its ancestors can be traced back to the Middle East, where it was known as 'sambosa' and likely introduced to India by Central Asian traders centuries ago.",
+      "source": "generated"
+    }
   }
 ]

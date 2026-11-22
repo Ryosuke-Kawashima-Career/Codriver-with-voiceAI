@@ -151,6 +151,19 @@ const COMMAND_SYNONYMS: Record<Exclude<VoiceCommand, null>, string[]> = {
   stop: ['stop', 'end', 'quit', 'finish', 'बंद', 'खत्म', 'स्टॉप', 'முடி', 'போதும்'],
 };
 
+const QUIZ_REQUEST_HINTS = [
+  'quiz',
+  'question',
+  'trivia',
+  'game',
+  'क्विज़',
+  'क्विज',
+  'सवाल',
+  'प्रश्न',
+  'வினாடி',
+  'கேள்வி',
+];
+
 export function detectVoiceCommand(transcript: string): VoiceCommand {
   const norm = normalizeText(transcript);
   if (!norm) return null;
@@ -159,9 +172,14 @@ export function detectVoiceCommand(transcript: string): VoiceCommand {
   // Commands are short utterances (<= 4 words) to avoid false triggers inside full answers
   if (words.length > 4) return null;
 
+  const mentionsQuiz = QUIZ_REQUEST_HINTS.some((hint) => norm.includes(normalizeText(hint)));
+
   for (const [cmd, phrases] of Object.entries(COMMAND_SYNONYMS) as Array<
     [Exclude<VoiceCommand, null>, string[]]
   >) {
+    // Never swallow "start a quiz" / "क्विज़ शुरू करो" as a resume command
+    if (cmd === 'resume' && mentionsQuiz) continue;
+
     for (const phrase of phrases) {
       const pNorm = normalizeText(phrase);
       if (norm === pNorm || ` ${norm} `.includes(` ${pNorm} `)) {
