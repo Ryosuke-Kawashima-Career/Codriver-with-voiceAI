@@ -13,7 +13,7 @@ export const LANGUAGES: LanguageMeta[] = [
     code: 'en-IN',
     label: 'English (India)',
     nativeLabel: 'English',
-    voiceLabel: 'Rohan · Warm Indian English',
+    voiceLabel: 'Matthew · American English',
     sampleLine: 'Ready for a quick one along the highway?',
   },
   {

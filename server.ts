@@ -27,7 +27,7 @@ const ALLOWED_LANGUAGES = new Set(['en-IN', 'hi-IN', 'ta-IN']);
 const GMP_ATTRIBUTION_ID = 'gmp_mcp_codeassist_v1_aistudio';
 
 const MURF_VOICES: Record<string, { voiceId: string; locale: string }> = {
-  'en-IN': { voiceId: 'en-IN-rohan', locale: 'en-IN' },
+  'en-IN': { voiceId: 'Matthew', locale: 'en-US' },
   'hi-IN': { voiceId: 'hi-IN-kabir', locale: 'hi-IN' },
   'ta-IN': { voiceId: 'ta-IN-iniya', locale: 'ta-IN' },
 };

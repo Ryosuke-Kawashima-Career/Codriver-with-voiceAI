@@ -186,5 +186,908 @@
       "fun_fact": "While the samosa is iconic across India, its ancestors can be traced back to the Middle East, where it was known as 'sambosa' and likely introduced to India by Central Asian traders centuries ago.",
       "source": "generated"
     }
+  },
+  {
+    "place_key": "jewar",
+    "place_name": "Jewar",
+    "kind": "landmark",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_osm_lm_jewar",
+      "group_id": "q_osm_lm_jewar",
+      "type": "landmark",
+      "language": "en-IN",
+      "prompt": "We are near a fast-growing town in Gautam Buddha Nagar that is home to the upcoming Noida International Airport. Can you name this town?",
+      "clues": [
+        "This town lies right along the Yamuna Expressway connecting Greater Noida to Agra.",
+        "Its name starts with the letter J and is often heard in news about Delhi NCR's second major airport."
+      ],
+      "answers": [
+        "Jewar",
+        "Jevar",
+        "Jewar town",
+        "Jever"
+      ],
+      "display_answer": "Jewar",
+      "fun_fact": "Once operational, the Noida International Airport near Jewar is planned to be one of the largest airports in Asia.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "mathura",
+    "place_name": "Mathura",
+    "kind": "landmark",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_osm_lm_mathura",
+      "group_id": "q_osm_lm_mathura",
+      "type": "landmark",
+      "language": "en-IN",
+      "prompt": "We are passing near a sacred city on the banks of the Yamuna River, famous as the birthplace of Lord Krishna. Which city is this?",
+      "clues": [
+        "It is also famous across India for a rich, caramelised milk sweet called peda.",
+        "Together with nearby Vrindavan, it forms one of the most celebrated Braj pilgrimage centres."
+      ],
+      "answers": [
+        "Mathura",
+        "Mathura city",
+        "Mathura ji"
+      ],
+      "display_answer": "Mathura",
+      "fun_fact": "Mathura's famous pedas are made by slow-roasting khoya with sugar and cardamom, and are a beloved road-trip treat.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "delhi",
+    "place_name": "Delhi",
+    "kind": "region",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_osm_reg_delhi",
+      "group_id": "q_osm_reg_delhi",
+      "type": "region",
+      "language": "en-IN",
+      "prompt": "Which iconic 17th-century red sandstone fort in Delhi hosts the Prime Minister's Independence Day speech every year?",
+      "clues": [],
+      "answers": [
+        "Red Fort",
+        "Lal Qila",
+        "The Red Fort",
+        "Lal Quila"
+      ],
+      "display_answer": "Red Fort (Lal Qila),",
+      "fun_fact": "Built by Mughal Emperor Shah Jahan in 1648, the Red Fort is a UNESCO World Heritage Site.",
+      "source": "generated"
+    },
+    "welcome": "Welcome to Delhi, the vibrant capital city where centuries of heritage meet bustling modern avenues.",
+    "greeting": "Namaste!"
+  },
+  {
+    "place_key": "uttar_pradesh",
+    "place_name": "Uttar Pradesh",
+    "kind": "region",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_osm_reg_uttar_pradesh",
+      "group_id": "q_osm_reg_uttar_pradesh",
+      "type": "region",
+      "language": "en-IN",
+      "prompt": "Which famous river joins the Ganga at the sacred Triveni Sangam in Prayagraj?",
+      "clues": [],
+      "answers": [
+        "Yamuna",
+        "The Yamuna",
+        "Yamuna river",
+        "Jamuna"
+      ],
+      "display_answer": "Yamuna",
+      "fun_fact": "According to tradition, the invisible mythical Saraswati River also meets the Ganga and Yamuna at the Sangam.",
+      "source": "generated"
+    },
+    "welcome": "Welcome to Uttar Pradesh, India's most populous state and home to timeless rivers and heritage.",
+    "greeting": "Namaste and welcome!"
+  },
+  {
+    "place_key": "noida",
+    "place_name": "Noida",
+    "kind": "region",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_osm_reg_noida",
+      "group_id": "q_osm_reg_noida",
+      "type": "region",
+      "language": "en-IN",
+      "prompt": "The name Noida is actually an acronym. What does the letter N in Noida stand for?",
+      "clues": [],
+      "answers": [
+        "New",
+        "New Okhla",
+        "Naya"
+      ],
+      "display_answer": "New (New Okhla Industrial Development Authority),",
+      "fun_fact": "Noida was established in 1976 and stands for New Okhla Industrial Development Authority.",
+      "source": "generated"
+    },
+    "welcome": "Welcome to Noida, a planned modern hub of technology, media, and wide green avenues.",
+    "greeting": "Hello and welcome!"
+  },
+  {
+    "place_key": "greater_noida",
+    "place_name": "Greater Noida",
+    "kind": "region",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_osm_reg_greater_noida",
+      "group_id": "q_osm_reg_greater_noida",
+      "type": "region",
+      "language": "en-IN",
+      "prompt": "Greater Noida is home to the Buddh International Circuit, which hosted India's first Grand Prix in which motorsport?",
+      "clues": [],
+      "answers": [
+        "Formula One",
+        "Formula 1",
+        "F1",
+        "Formula one racing"
+      ],
+      "display_answer": "Formula 1",
+      "fun_fact": "The Buddh International Circuit hosted three Indian Grand Prix Formula 1 races between 2011 and 2013.",
+      "source": "generated"
+    },
+    "welcome": "Welcome to Greater Noida, known for its wide expressways, universities, and international expo centres.",
+    "greeting": "Welcome aboard!"
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341507177_1",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_gen_trivia_1795341507177_1",
+      "group_id": "q_gen_trivia_1795341507177_1",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which Indian cricketer is famously nicknamed Captain Cool?",
+      "clues": [],
+      "answers": [
+        "MS Dhoni",
+        "Dhoni",
+        "Mahendra Singh Dhoni",
+        "M S Dhoni"
+      ],
+      "display_answer": "MS Dhoni",
+      "fun_fact": "MS Dhoni is the only captain to have won all three major ICC white-ball trophies.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341507177_2",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_gen_trivia_1795341507177_2",
+      "group_id": "q_gen_trivia_1795341507177_2",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which 2022 Indian film won the Academy Award for Best Original Song for Naatu Naatu?",
+      "clues": [],
+      "answers": [
+        "RRR",
+        "Triple R",
+        "R R R"
+      ],
+      "display_answer": "RRR",
+      "fun_fact": "Composed by M. M. Keeravani, Naatu Naatu became the first song from an Indian film to win an Oscar.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341507177_3",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_gen_trivia_1795341507177_3",
+      "group_id": "q_gen_trivia_1795341507177_3",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which popular South Indian steamed breakfast dish is made from a fermented batter of rice and urad dal?",
+      "clues": [],
+      "answers": [
+        "Idli",
+        "Idly",
+        "Idlis"
+      ],
+      "display_answer": "Idli",
+      "fun_fact": "Idli is naturally steamed and probiotic, making it one of the lightest and healthiest highway breakfast stops.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341507177_4",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_gen_trivia_1795341507177_4",
+      "group_id": "q_gen_trivia_1795341507177_4",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which is the longest river flowing entirely within India?",
+      "clues": [],
+      "answers": [
+        "Godavari",
+        "The Godavari",
+        "Godavari river"
+      ],
+      "display_answer": "Godavari",
+      "fun_fact": "Often called Dakshin Ganga, the Godavari flows about 1,465 kilometres from Maharashtra to the Bay of Bengal.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341507177_5",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:27.177Z",
+    "question": {
+      "id": "q_gen_trivia_1795341507177_5",
+      "group_id": "q_gen_trivia_1795341507177_5",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "In which Indian state would you find the ancient rock-cut caves of Ajanta and Ellora?",
+      "clues": [],
+      "answers": [
+        "Maharashtra",
+        "Maharastra"
+      ],
+      "display_answer": "Maharashtra",
+      "fun_fact": "Both Ajanta and Ellora are UNESCO World Heritage Sites, famous for monasteries and temples carved straight out of basalt cliffs.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341511074_1",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:31.074Z",
+    "question": {
+      "id": "q_gen_trivia_1795341511074_1",
+      "group_id": "q_gen_trivia_1795341511074_1",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "In which year did India win its first-ever Cricket World Cup under the captaincy of Kapil Dev?",
+      "clues": [],
+      "answers": [
+        "1983",
+        "nineteen eighty three",
+        "nineteen eighty-three"
+      ],
+      "display_answer": "1983",
+      "fun_fact": "India defeated the two-time defending champions West Indies at Lord's in London to lift the nineteen eighty-three trophy.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341511074_2",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:31.074Z",
+    "question": {
+      "id": "q_gen_trivia_1795341511074_2",
+      "group_id": "q_gen_trivia_1795341511074_2",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which famous sweet from Agra is made from ash gourd and is a popular highway souvenir for travellers?",
+      "clues": [],
+      "answers": [
+        "Petha",
+        "Agra petha",
+        "Petha sweet"
+      ],
+      "display_answer": "Petha",
+      "fun_fact": "Agra petha is traditionally prepared by simmering white pumpkin pieces in sugar syrup and comes in flavours like kesar and paan.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341511074_3",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:31.074Z",
+    "question": {
+      "id": "q_gen_trivia_1795341511074_3",
+      "group_id": "q_gen_trivia_1795341511074_3",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which is the longest national highway in India, running all the way from Srinagar to Kanyakumari?",
+      "clues": [],
+      "answers": [
+        "NH 44",
+        "NH44",
+        "National Highway 44",
+        "Highway 44"
+      ],
+      "display_answer": "NH 44",
+      "fun_fact": "NH forty-four stretches for over three thousand seven hundred kilometres, connecting the northernmost and southernmost parts of mainland India.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341511074_4",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:31.074Z",
+    "question": {
+      "id": "q_gen_trivia_1795341511074_4",
+      "group_id": "q_gen_trivia_1795341511074_4",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which classic nineteen seventy-five Bollywood film features the iconic characters Jai and Veeru, played by Amitabh Bachchan and Dharmendra?",
+      "clues": [],
+      "answers": [
+        "Sholay",
+        "Sholey"
+      ],
+      "display_answer": "Sholay",
+      "fun_fact": "Sholay was largely shot around the rocky hills of Ramanagara near Bengaluru, which became famous as Ramgarh.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341511074_5",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T09:58:31.074Z",
+    "question": {
+      "id": "q_gen_trivia_1795341511074_5",
+      "group_id": "q_gen_trivia_1795341511074_5",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which ancient wonder of the world is located near Cairo in Egypt and is the only one still largely intact?",
+      "clues": [],
+      "answers": [
+        "Great Pyramid of Giza",
+        "Pyramids of Giza",
+        "Pyramids",
+        "Giza Pyramid",
+        "Great Pyramid"
+      ],
+      "display_answer": "Great Pyramid of Giza",
+      "fun_fact": "Built over four thousand five hundred years ago, the Great Pyramid of Giza was the tallest human-made structure in the world for millennia.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341844184_1",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:04:04.184Z",
+    "question": {
+      "id": "q_gen_trivia_1795341844184_1",
+      "group_id": "q_gen_trivia_1795341844184_1",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Who was the captain of the Indian cricket team when India won its very first Cricket World Cup in 1983?",
+      "clues": [],
+      "answers": [
+        "Kapil Dev",
+        "Kapil",
+        "Kapildev"
+      ],
+      "display_answer": "Kapil Dev",
+      "fun_fact": "India defeated the West Indies at Lord's in London to lift the 1983 World Cup. Kapil Dev also scored an unbeaten 175 against Zimbabwe in that tournament.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341844184_2",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:04:04.184Z",
+    "question": {
+      "id": "q_gen_trivia_1795341844184_2",
+      "group_id": "q_gen_trivia_1795341844184_2",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which popular South Indian breakfast dish is traditionally steamed in cylindrical moulds with layers of rice flour and grated coconut?",
+      "clues": [],
+      "answers": [
+        "Puttu",
+        "Pittu",
+        "Pootu"
+      ],
+      "display_answer": "Puttu",
+      "fun_fact": "Puttu is a beloved breakfast across Kerala and Tamil Nadu. It is commonly served with spicy kadala curry or ripe bananas.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341844184_3",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:04:04.184Z",
+    "question": {
+      "id": "q_gen_trivia_1795341844184_3",
+      "group_id": "q_gen_trivia_1795341844184_3",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which is the longest river flowing entirely within India?",
+      "clues": [],
+      "answers": [
+        "Godavari",
+        "Godavari river",
+        "The Godavari"
+      ],
+      "display_answer": "Godavari",
+      "fun_fact": "Stretching over 1,465 kilometres from Nashik in Maharashtra to the Bay of Bengal, the Godavari is often called the Dakshin Ganga.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341844184_4",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:04:04.184Z",
+    "question": {
+      "id": "q_gen_trivia_1795341844184_4",
+      "group_id": "q_gen_trivia_1795341844184_4",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which 1975 Bollywood classic features the iconic characters Jai, Veeru, and Gabbar Singh?",
+      "clues": [],
+      "answers": [
+        "Sholay",
+        "Sholay movie",
+        "Sholey"
+      ],
+      "display_answer": "Sholay",
+      "fun_fact": "Directed by Ramesh Sippy, Sholay was filmed largely in the rocky hills of Ramanagara near Bengaluru. Its dialogues remain popular even today.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795341844184_5",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:04:04.184Z",
+    "question": {
+      "id": "q_gen_trivia_1795341844184_5",
+      "group_id": "q_gen_trivia_1795341844184_5",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "In which Indian city would you find the famous Hawa Mahal, also known as the Palace of Winds?",
+      "clues": [],
+      "answers": [
+        "Jaipur",
+        "Pink City",
+        "Jaipur city"
+      ],
+      "display_answer": "Jaipur",
+      "fun_fact": "Built in 1799 by Maharaja Sawai Pratap Singh, Hawa Mahal has 953 small windows called jharokhas that keep the palace cool in summer.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795342344082_1",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:12:24.082Z",
+    "question": {
+      "id": "q_gen_trivia_1795342344082_1",
+      "group_id": "q_gen_trivia_1795342344082_1",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which Indian cricket captain hit the winning six in the 2011 Cricket World Cup final?",
+      "clues": [],
+      "answers": [
+        "MS Dhoni",
+        "Mahendra Singh Dhoni",
+        "Dhoni",
+        "M S Dhoni"
+      ],
+      "display_answer": "MS Dhoni",
+      "fun_fact": "MS Dhoni's unbeaten 91 against Sri Lanka in Mumbai ended India's 28-year wait for the ODI World Cup trophy.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795342344082_2",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:12:24.082Z",
+    "question": {
+      "id": "q_gen_trivia_1795342344082_2",
+      "group_id": "q_gen_trivia_1795342344082_2",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which famous Mumbai street food is made of a spicy potato patty served inside a soft bread bun?",
+      "clues": [],
+      "answers": [
+        "Vada Pav",
+        "Wada Pav",
+        "Vada Pao",
+        "Wada Pao"
+      ],
+      "display_answer": "Vada Pav",
+      "fun_fact": "Vada Pav was invented in the 1960s near Dadar railway station as a quick and affordable snack for mill workers.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795342344082_3",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:12:24.082Z",
+    "question": {
+      "id": "q_gen_trivia_1795342344082_3",
+      "group_id": "q_gen_trivia_1795342344082_3",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "In the iconic 1975 Hindi film Sholay, what was the name of the villain played by Amjad Khan?",
+      "clues": [],
+      "answers": [
+        "Gabbar Singh",
+        "Gabbar",
+        "Gabbar Sing"
+      ],
+      "display_answer": "Gabbar Singh",
+      "fun_fact": "Amjad Khan's dialogue delivery as Gabbar Singh became so legendary that audio cassettes of the film's dialogues sold in lakhs.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795342344082_4",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:12:24.082Z",
+    "question": {
+      "id": "q_gen_trivia_1795342344082_4",
+      "group_id": "q_gen_trivia_1795342344082_4",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which is the longest river flowing through India, starting from the Gangotri glacier in Uttarakhand?",
+      "clues": [],
+      "answers": [
+        "Ganga",
+        "Ganges",
+        "The Ganga",
+        "The Ganges"
+      ],
+      "display_answer": "Ganga",
+      "fun_fact": "The Ganga flows for over 2,500 kilometres across northern India before emptying into the Bay of Bengal.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795342344082_5",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:12:24.082Z",
+    "question": {
+      "id": "q_gen_trivia_1795342344082_5",
+      "group_id": "q_gen_trivia_1795342344082_5",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "In which Indian city would you find the Hawa Mahal, famously known as the Palace of Winds?",
+      "clues": [],
+      "answers": [
+        "Jaipur",
+        "Pink City"
+      ],
+      "display_answer": "Jaipur",
+      "fun_fact": "Built in 1799, the Hawa Mahal in Jaipur has 953 small windows designed to let cool breezes flow through the palace.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "qutab_minar",
+    "place_name": "Qutab Minar",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-22T10:13:07.383Z",
+    "question": {
+      "id": "q_agent_1795342387383_yy85",
+      "group_id": "q_agent_1795342387383_yy85",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which ruler started the construction of Qutab Minar in Delhi?",
+      "clues": [
+        "He was the founder of the Delhi Sultanate.",
+        "His name starts with Q."
+      ],
+      "answers": [
+        "Qutb ud-Din Aibak",
+        "Qutubuddin Aibak",
+        "Aibak",
+        "Qutb-ud-din Aibak"
+      ],
+      "display_answer": "Qutb ud-Din Aibak",
+      "fun_fact": "Qutb ud-Din Aibak began building Qutab Minar in 1199, and his successor Iltutmish completed it.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "gurugram",
+    "place_name": "Gurugram",
+    "kind": "region",
+    "language": "en-IN",
+    "created_at": "2026-11-28T07:48:08.049Z",
+    "question": {
+      "id": "q_osm_reg_gurugram",
+      "group_id": "q_osm_reg_gurugram",
+      "type": "region",
+      "language": "en-IN",
+      "prompt": "Until 2016, Gurugram was officially known by what popular name?",
+      "clues": [],
+      "answers": [
+        "Gurgaon",
+        "Gurgaav",
+        "Gurgao"
+      ],
+      "display_answer": "Gurgaon",
+      "fun_fact": "The city was renamed Gurugram in 2016, inspired by Guru Dronacharya from the Mahabharata.",
+      "source": "generated"
+    },
+    "welcome": "Welcome to Gurugram, the Millennium City bustling with modern highways and tech hubs.",
+    "greeting": "Namaste from Gurugram!"
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795852088049_1",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T07:48:08.049Z",
+    "question": {
+      "id": "q_gen_trivia_1795852088049_1",
+      "group_id": "q_gen_trivia_1795852088049_1",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which Indian cricketer is famously nicknamed Captain Cool?",
+      "clues": [],
+      "answers": [
+        "MS Dhoni",
+        "Dhoni",
+        "Mahendra Singh Dhoni",
+        "M S Dhoni"
+      ],
+      "display_answer": "MS Dhoni",
+      "fun_fact": "MS Dhoni is the only captain in history to win all three major ICC white-ball trophies.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795852088049_2",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T07:48:08.049Z",
+    "question": {
+      "id": "q_gen_trivia_1795852088049_2",
+      "group_id": "q_gen_trivia_1795852088049_2",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which crispy, crepe-like South Indian dish is made from fermented rice and lentil batter and often stuffed with spiced potatoes?",
+      "clues": [],
+      "answers": [
+        "Masala Dosa",
+        "Dosa",
+        "Dosai"
+      ],
+      "display_answer": "Masala Dosa",
+      "fun_fact": "Masala dosa is believed to have originated in the coastal town of Udupi in Karnataka.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795852088049_3",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T07:48:08.049Z",
+    "question": {
+      "id": "q_gen_trivia_1795852088049_3",
+      "group_id": "q_gen_trivia_1795852088049_3",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "In the classic 1975 Bollywood film Sholay, what is the name of the iconic villain played by Amjad Khan?",
+      "clues": [],
+      "answers": [
+        "Gabbar Singh",
+        "Gabbar",
+        "Gabar Singh"
+      ],
+      "display_answer": "Gabbar Singh",
+      "fun_fact": "Gabbar Singh's dialogues from Sholay remain some of the most quoted lines in Indian cinema history.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795852088049_4",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T07:48:08.049Z",
+    "question": {
+      "id": "q_gen_trivia_1795852088049_4",
+      "group_id": "q_gen_trivia_1795852088049_4",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which sacred river is the longest river flowing through India?",
+      "clues": [],
+      "answers": [
+        "Ganga",
+        "Ganges",
+        "The Ganges",
+        "Ganga River"
+      ],
+      "display_answer": "The Ganga",
+      "fun_fact": "The Ganga stretches over two thousand five hundred kilometres from the Himalayas to the Bay of Bengal.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795852088049_5",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T07:48:08.049Z",
+    "question": {
+      "id": "q_gen_trivia_1795852088049_5",
+      "group_id": "q_gen_trivia_1795852088049_5",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "In which Indian city is the famous Hawa Mahal, also known as the Palace of Winds, located?",
+      "clues": [],
+      "answers": [
+        "Jaipur",
+        "Jaypur",
+        "Pink City"
+      ],
+      "display_answer": "Jaipur",
+      "fun_fact": "Built in 1799, Hawa Mahal has 953 small windows designed to let cool breezes flow through the palace.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795853470687_1",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T08:11:10.687Z",
+    "question": {
+      "id": "q_gen_trivia_1795853470687_1",
+      "group_id": "q_gen_trivia_1795853470687_1",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Who is the only cricketer in history to score 100 international centuries?",
+      "clues": [],
+      "answers": [
+        "Sachin Tendulkar",
+        "Sachin",
+        "Tendulkar"
+      ],
+      "display_answer": "Sachin Tendulkar",
+      "fun_fact": "Sachin Tendulkar scored his 100th international century against Bangladesh in 2012, a record that still stands today.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795853470688_2",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T08:11:10.687Z",
+    "question": {
+      "id": "q_gen_trivia_1795853470688_2",
+      "group_id": "q_gen_trivia_1795853470688_2",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which popular South Indian steamed rice cake is traditionally served with sambar and coconut chutney?",
+      "clues": [],
+      "answers": [
+        "Idli",
+        "Idly",
+        "Idlis"
+      ],
+      "display_answer": "Idli",
+      "fun_fact": "Idlis are fermented overnight before steaming, making them light, fluffy, and a favourite highway breakfast across India.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795853470688_3",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T08:11:10.687Z",
+    "question": {
+      "id": "q_gen_trivia_1795853470688_3",
+      "group_id": "q_gen_trivia_1795853470688_3",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which Indian city is famously known as the Pink City?",
+      "clues": [],
+      "answers": [
+        "Jaipur",
+        "Jaypur"
+      ],
+      "display_answer": "Jaipur",
+      "fun_fact": "Jaipur's old city was painted terracotta pink in 1876 as a symbol of hospitality to welcome the Prince of Wales.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795853470688_4",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T08:11:10.687Z",
+    "question": {
+      "id": "q_gen_trivia_1795853470688_4",
+      "group_id": "q_gen_trivia_1795853470688_4",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which 1975 Bollywood classic features the iconic characters Jai, Veeru, and Gabbar Singh?",
+      "clues": [],
+      "answers": [
+        "Sholay",
+        "Shole"
+      ],
+      "display_answer": "Sholay",
+      "fun_fact": "Sholay was largely filmed among the rocky hills of Ramanagara near Bengaluru, which are still fondly called Sholay hills.",
+      "source": "generated"
+    }
+  },
+  {
+    "place_key": "trivia_q_gen_trivia_1795853470688_5",
+    "place_name": "General Trivia",
+    "kind": "trivia",
+    "language": "en-IN",
+    "created_at": "2026-11-28T08:11:10.687Z",
+    "question": {
+      "id": "q_gen_trivia_1795853470688_5",
+      "group_id": "q_gen_trivia_1795853470688_5",
+      "type": "trivia",
+      "language": "en-IN",
+      "prompt": "Which famous river in Africa flows northwards through eleven countries including Egypt?",
+      "clues": [],
+      "answers": [
+        "Nile",
+        "The Nile",
+        "Nile River",
+        "River Nile"
+      ],
+      "display_answer": "The Nile",
+      "fun_fact": "Stretching over 6,600 kilometres, the Nile has been a vital lifeline for travel and civilisation for thousands of years.",
+      "source": "generated"
+    }
   }
 ]
